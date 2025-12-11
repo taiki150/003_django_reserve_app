@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'reserve/calendar.css' %}">
+{% endblock %}
+{% block content %}
+<h3>予約画面</h3>
+<p>{{ user.username }}さんの予約画面です</p>
+<div class="main_contents">
+    <div class="reserve-container">
+        <div class="calendar-wrapper">
+            <div class="calendar">
+                <div class="calendar-header">
+                    <button class="calendar-nav-btn" id="prev-month">&lt;</button>
+                    <h2 class="calendar-month-year" id="month-year"></h2>
+                    <button class="calendar-nav-btn" id="next-month">&gt;</button>
+                </div>
+                <div class="calendar-weekdays">
+                    <div class="weekday">日</div>
+                    <div class="weekday">月</div>
+                    <div class="weekday">火</div>
+                    <div class="weekday">水</div>
+                    <div class="weekday">木</div>
+                    <div class="weekday">金</div>
+                    <div class="weekday">土</div>
+                </div>
+                <div class="calendar-days" id="calendar-days"></div>
+            </div>
+        </div>
+        
+        <!-- PC版: 右側の予約詳細パネル -->
+        <div class="reserve-detail-panel" id="reserve-detail-panel">
+            <div class="time-selection-content">
+                <div class="time-selection-header">
+                    <h3 id="selected-date-display-pc">日付を選択してください</h3>
+                    <button class="close-btn pc-close-btn" id="close-time-panel-pc" style="display: none;">&times;</button>
+                </div>
+                <div class="time-slots">
+                    <p class="time-label">時間を選択してください（10時〜14時）</p>
+                    <div class="time-buttons">
+                        <button class="time-btn" data-time="10:00">10:00</button>
+                        <button class="time-btn" data-time="11:00">11:00</button>
+                        <button class="time-btn" data-time="12:00">12:00</button>
+                        <button class="time-btn" data-time="13:00">13:00</button>
+                        <button class="time-btn" data-time="14:00">14:00</button>
+                    </div>
+                </div>
+                <div class="reserve-form-section" id="reserve-form-section-pc" style="display: none;">
+                    <form method="POST" action="{% url 'acounts:reserve' %}" id="reserve-form-pc">
+                        {% csrf_token %}
+                        <input type="hidden" name="selected_date" id="selected-date-input-pc">
+                        <input type="hidden" name="selected_time" id="selected-time-input-pc">
+                        <div class="form-summary">
+                            <p><strong>予約内容</strong></p>
+                            <p>日付: <span id="form-date-display-pc"></span></p>
+                            <p>時間: <span id="form-time-display-pc"></span></p>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="submit-btn">予約を確定</button>
+                            <button type="button" class="cancel-btn" id="cancel-reserve-pc">キャンセル</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- モーダルオーバーレイ（スマホ版用） -->
+<div class="modal-overlay" id="modal-overlay"></div>
+
+<!-- 時間選択モーダル（スマホ版用） -->
+<div class="time-selection-modal" id="time-selection-panel">
+    <div class="time-selection-content">
+        <div class="time-selection-header">
+            <h3 id="selected-date-display">日付を選択してください</h3>
+            <button class="close-btn" id="close-time-panel">&times;</button>
+        </div>
+        <div class="time-slots">
+            <p class="time-label">時間を選択してください（10時〜14時）</p>
+            <div class="time-buttons">
+                <button class="time-btn" data-time="10:00">10:00</button>
+                <button class="time-btn" data-time="11:00">11:00</button>
+                <button class="time-btn" data-time="12:00">12:00</button>
+                <button class="time-btn" data-time="13:00">13:00</button>
+                <button class="time-btn" data-time="14:00">14:00</button>
+            </div>
+        </div>
+        <div class="reserve-form-section" id="reserve-form-section" style="display: none;">
+            <form method="POST" action="{% url 'acounts:reserve' %}" id="reserve-form">
+                {% csrf_token %}
+                <input type="hidden" name="selected_date" id="selected-date-input">
+                <input type="hidden" name="selected_time" id="selected-time-input">
+                <div class="form-summary">
+                    <p><strong>予約内容</strong></p>
+                    <p>日付: <span id="form-date-display"></span></p>
+                    <p>時間: <span id="form-time-display"></span></p>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="submit-btn">予約を確定</button>
+                    <button type="button" class="cancel-btn" id="cancel-reserve">キャンセル</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script src="{% static 'reserve/calendar.js' %}"></script>
+{% endblock %}

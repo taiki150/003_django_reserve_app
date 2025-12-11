@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'reserve/calendar.css' %}">
+{% endblock %}
+{% block content %}
+<h3>予約画面</h3>
+<p>{{ user.username }}さんの予約画面です</p>
+<div class="main_contents">
+    
+</div>
+
+{% endblock %}
