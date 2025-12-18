@@ -136,7 +136,7 @@ LOGIN_URL = '/acounts/user_login'
 
 # -------------------- セキュリティについて --------------------  #
 # 3000秒後にログアウトするよ
-SESSION_COOKIE_AGE = 600
+SESSION_COOKIE_AGE = 1000000000
 
 # ブラウザクローズでsession切る
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True

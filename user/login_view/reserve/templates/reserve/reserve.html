@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'reserve/calendar.css' %}">
+<link rel="stylesheet" href="{% static 'reserve/css/calendar.css' %}">
 {% endblock %}
 {% block content %}
 <h3>予約画面</h3>
@@ -10,10 +10,9 @@
     <div class="reserve-container">
         <div class="calendar-wrapper">
             <div class="calendar">
+                
                 <div class="calendar-header">
-                    <button class="calendar-nav-btn" id="prev-month">&lt;</button>
                     <h2 class="calendar-month-year" id="month-year"></h2>
-                    <button class="calendar-nav-btn" id="next-month">&gt;</button>
                 </div>
                 <div class="calendar-weekdays">
                     <div class="weekday">日</div>
@@ -24,7 +23,15 @@
                     <div class="weekday">金</div>
                     <div class="weekday">土</div>
                 </div>
-                <div class="calendar-days" id="calendar-days"></div>
+                <div class="calendar-days" id="calendar-days">
+                    <script src="{% static 'reserve/js/calendar_sub.js' %}"></script>
+                    {% comment %} 今月の日付を表示 {% endcomment %}
+                    {% for day in days %}
+                        <div class="calendar-day" data-date="{{ day }}">
+                            {{ day }}
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
         
@@ -46,7 +53,7 @@
                     </div>
                 </div>
                 <div class="reserve-form-section" id="reserve-form-section-pc" style="display: none;">
-                    <form method="POST" action="{% url 'acounts:reserve' %}" id="reserve-form-pc">
+                    <form method="POST" action="{% url 'reserve:reseve_create' %}" id="reserve-form-pc">
                         {% csrf_token %}
                         <input type="hidden" name="selected_date" id="selected-date-input-pc">
                         <input type="hidden" name="selected_time" id="selected-time-input-pc">
@@ -79,15 +86,13 @@
         <div class="time-slots">
             <p class="time-label">時間を選択してください（10時〜14時）</p>
             <div class="time-buttons">
-                <button class="time-btn" data-time="10:00">10:00</button>
-                <button class="time-btn" data-time="11:00">11:00</button>
-                <button class="time-btn" data-time="12:00">12:00</button>
-                <button class="time-btn" data-time="13:00">13:00</button>
-                <button class="time-btn" data-time="14:00">14:00</button>
+                {% for time_slot in times %}
+                <button class="time-btn" data-time="{{ time_slot }}">{{ time_slot }}<br></button>
+                {% endfor %}
             </div>
         </div>
         <div class="reserve-form-section" id="reserve-form-section" style="display: none;">
-            <form method="POST" action="{% url 'acounts:reserve' %}" id="reserve-form">
+            <form method="POST" action="{% url 'reserve:reseve_create' %}" id="reserve-form">
                 {% csrf_token %}
                 <input type="hidden" name="selected_date" id="selected-date-input">
                 <input type="hidden" name="selected_time" id="selected-time-input">
@@ -104,5 +109,27 @@
         </div>
     </div>
 </div>
-<script src="{% static 'reserve/calendar.js' %}"></script>
+
+<!-- 予約済み日付データをJavaScriptに渡す -->
+<script>
+    // Djangoから予約済み日付のリストを取得
+    window.reservedDates = [
+        {% for date in reserved_dates %}
+        '{{ date }}'{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+    
+    // Djangoから予約済み時間の辞書を取得（日付ごと）
+    window.reservedTimesByDate = {
+        {% for date, times in reserved_times_by_date.items %}
+        '{{ date }}': [
+            {% for time in times %}
+            '{{ time }}'{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ]{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    };
+</script>
+
+<script src="{% static 'reserve/js/calendar.js' %}"></script>
 {% endblock %}

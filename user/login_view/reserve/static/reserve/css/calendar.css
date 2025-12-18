@@ -36,7 +36,7 @@
 
 .calendar-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     margin-bottom: 20px;
     padding-bottom: 15px;
@@ -60,11 +60,26 @@
     font-size: clamp(14px, 2vw, 18px);
     transition: 0.3s;
     font-weight: bold;
+    text-decoration: none;
+    display: inline-block;
 }
 
 .calendar-nav-btn:hover {
     background-color: #158a83;
     opacity: 0.9;
+}
+
+.calendar-nav-btn:disabled,
+.calendar-nav-btn[style*="opacity: 0.5"] {
+    background-color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.calendar-nav-btn:disabled:hover,
+.calendar-nav-btn[style*="opacity: 0.5"]:hover {
+    background-color: #ccc;
+    opacity: 0.5;
 }
 
 .calendar-weekdays {
@@ -111,17 +126,17 @@
 }
 
 .calendar-day.today {
-    background-color: #1eaaa2;
-    color: #fff;
+    background-color: #f3d0a4;
     font-weight: bold;
     border-color: #1eaaa2;
 }
 
 .calendar-day.selected {
-    background-color: #f3d0a4;
-    border-color: #1eaaa2;
+    background-color: #1eaaa2;
+    /* border-color: #1eaaa2; */
     border-width: 2px;
     font-weight: bold;
+    color: #fff;
 }
 
 .calendar-day.other-month {
@@ -133,6 +148,46 @@
 .calendar-day.other-month:hover {
     background-color: #f9f9f9;
     border-color: #ddd;
+}
+
+.calendar-day.empty {
+    background-color: transparent;
+    border: none;
+    cursor: default;
+}
+
+.calendar-day.past-date {
+    color: #999;
+    background-color: #f0f0f0;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.calendar-day.past-date:hover {
+    background-color: #f0f0f0;
+    border-color: #ddd;
+    opacity: 0.5;
+}
+
+/* 予約済み日付のスタイル */
+.calendar-day.reserved-date {
+    background-color: #ffd700;
+    color: #333;
+    font-weight: bold;
+    border-color: #ffa500;
+    position: relative;
+}
+
+.calendar-day.reserved-date:hover {
+    background-color: #ffed4e;
+    border-color: #ffa500;
+}
+
+/* 予約済みかつ今日の日付 */
+.calendar-day.reserved-date.today {
+    background-color: #ffd700;
+    border-color: #1eaaa2;
+    box-shadow: 0 0 0 2px #1eaaa2;
 }
 
 /* モーダルオーバーレイ */
@@ -266,6 +321,27 @@
     background-color: #1eaaa2;
     color: #fff;
     border-color: #158a83;
+}
+
+.time-btn.past-time,
+.time-btn:disabled {
+    color: #999;
+    background-color: #f0f0f0;
+    border-color: #ddd;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.time-btn.past-time:hover,
+.time-btn:disabled:hover {
+    background-color: #f0f0f0;
+    color: #999;
+    border-color: #ddd;
+    opacity: 0.5;
+}
+
+.reserved-time {
+    font-size: 14px;
 }
 
 .reserve-form-section {
@@ -449,5 +525,52 @@
     
     .time-selection-modal.active {
         display: block;
+    }
+}
+
+/* SP版（450px以下）のスタイル - 横幅に応じて相対的に縮小 */
+@media (max-width: 450px) {
+    /* 縮小率を計算 (100vw / 450px = 最小で約0.78倍) */
+    /* 各要素を相対的に縮小 */
+    
+    .calendar {
+        padding: calc(20px * (100vw / 450));
+    }
+    
+    .calendar-header {
+        margin-bottom: calc(20px * (100vw / 450));
+        padding-bottom: calc(15px * (100vw / 450));
+    }
+    
+    .calendar-month-year {
+        font-size: calc(18px * (100vw / 450));
+    }
+    
+    .calendar-nav-btn {
+        padding: calc(10px * (100vw / 450)) calc(20px * (100vw / 450));
+        font-size: calc(14px * (100vw / 450));
+        border-radius: calc(5px * (100vw / 450));
+    }
+    
+    .calendar-weekdays {
+        gap: calc(5px * (100vw / 450));
+        margin-bottom: calc(10px * (100vw / 450));
+    }
+    
+    .weekday {
+        padding: 10px 5px;
+        font-size: clamp(8px, 2.5vw, 14px);
+        border-radius: calc(5px * (100vw / 450));
+    }
+    
+    .calendar-day {
+        padding: 5px;
+        border-radius: calc(5px * (100vw / 450));
+        gap: calc(5px * (100vw / 450));
+        font-size: clamp(8px, 2.5vw, 14px);
+    }
+    
+    .calendar-day.selected {
+        border-width: calc(2px * (100vw / 450));
     }
 }

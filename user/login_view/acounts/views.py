@@ -5,9 +5,6 @@ from django.views.generic import(
 from django.urls import reverse_lazy
 from django.contrib.auth import authenticate, login, logout
 from .forms import RegistForm, UserLoginForm, UserLoginForm2
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.utils.decorators import method_decorator
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView, LogoutView
 
 class HomeView(TemplateView):
@@ -21,7 +18,7 @@ class RegistUserView(CreateView):
 class UserLoginView(FormView):
     template_name = 'user_login.html'
     form_class = UserLoginForm
-    success_url = reverse_lazy('acounts:home')
+    success_url = reverse_lazy('reserve:reserve')
 
     def form_valid(self, form):
         email = form.cleaned_data['email']
@@ -48,7 +45,7 @@ class UserLogoutView(View):
     
 class UserLoginView2(LoginView):
     template_name = 'user_login2.html'
-    next_page = reverse_lazy('acounts:home')
+    next_page = reverse_lazy('reserve:reserve')
     form_class = UserLoginForm2
 
     def form_valid(self, form):
@@ -57,22 +54,9 @@ class UserLoginView2(LoginView):
         remember = form.cleaned_data['remember']
         if remember :
             self.request.session.set_expiry(120000)
-            print('ひゃほーーー')
         return result
     
-
-
-
 class UserLogoutView2(LogoutView):
     next_page = reverse_lazy('acounts:home')
     http_method_names = ['get', 'post']
     template_name = 'acounts/user_logout.html'
-    
-
-class UserView(TemplateView):
-    template_name = 'reserve/reserve.html'
-
-    @method_decorator(login_required)
-    def get(self, request, *args, **kwargs):
-        context = self.get_context_data(**kwargs)
-        return self.render_to_response(context)

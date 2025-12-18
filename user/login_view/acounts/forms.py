@@ -9,7 +9,7 @@ class RegistForm(forms.ModelForm):
         model = User
         fields = ['username', 'email', 'password']
         widgets = {
-            'password': forms.PasswordInput(),
+            'password': forms.PasswordInput(), # <input type="text">を<input type="password">に。
         }
         labels = {
             'username': '名前',

@@ -1,13 +1,23 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'reserve/calendar.css' %}">
+<link rel="stylesheet" href="{% static 'reserve/css/detail.css' %}">
 {% endblock %}
 {% block content %}
-<h3>予約画面</h3>
-<p>{{ user.username }}さんの予約画面です</p>
-<div class="main_contents">
-    
-</div>
+<h3>予約一覧画面</h3>
+<ul>
+    {% for date, times in reserved_times_by_date.items%}
+    <br>
+        {% for time in times %}
+            <li>
+                <div class="list-box">
+                    <p>{{ date }} {{ time }}</p>
+                    <button>削除</button>
+                    <button>編集</button>
+                </div>
+            </li>
+        {% endfor %}
+    {% endfor %}
+</ul>
 
 {% endblock %}
