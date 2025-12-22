@@ -1,13 +1,96 @@
+.main_contents {
+    /* overflow: hidden; */
+}
 
+/* 通常時（出現した時のスタイル） */
+.reserve-container { 
+    max-width: 1000px;
+    width: 100%;
+    padding: 0 50px;
+    gap: 50px;
+    box-sizing: border-box;
+    margin: auto;
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+}
 
-.main_contents ul {
+/* PC版の予約詳細パネルを初期状態で非表示 */
+@media (min-width: 769px) {
+    .reserve-detail-panel {
+        display: none !important;
+    }
+    
+    .reserve-detail-panel.active {
+        display: block !important;
+    }
+}
+
+.calendar-wrapper {
+    max-width: 0 !important;
+    width: 0 !important;
+    flex: 0 0 0 !important;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-width 0.75s ease, width 0.75s ease, flex-basis 0.75s ease, opacity 0.75s ease;
+    will-change: max-width, width, flex-basis, opacity;
+}
+
+.calendar-wrapper.active {
+    max-width: 450px !important;
+    width: 50% !important;
+    flex: 0 0 50% !important;
+    opacity: 1;
+    transition: max-width 0.75s ease, width 0.75s ease, flex-basis 0.75s ease, opacity 0.75s ease;
+}
+
+.calendar {
+    width: 100% !important;
+}
+
+/* カレンダーの日付と曜日を正方形で可変にする */
+.calendar-day {
+    aspect-ratio: 1 !important;
+    width: 100% !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+}
+
+.weekday {
+    aspect-ratio: 1 !important;
+    width: 100% !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+}
+
+.reserve-container ul {
+    max-width: 500px;
+    width: 100%;
     list-style: none;
     padding: 0;
-    margin: 0;
+    margin: 0 auto;
+    transition: margin 0.75s ease; /* カレンダーが出現する際の移動をスムーズに */
 }
 
 .main_contents li {
-    margin-bottom: 15px;
+    margin-bottom: 50px;
+}
+
+h4 {
+    border-bottom: 2px solid #1eaaa2;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    font-size: 18px;
+    font-weight: 500;
+    text-align: center;
+    color: #1eaaa2;
 }
 
 .list-box {
@@ -24,7 +107,7 @@
 .list-box:hover {
     background-color: #e8f5f4;
     border-color: #1eaaa2;
-    box-shadow: 0 2px 5px rgba(30, 170, 162, 0.1);
+    box-shadow: 0 2px 5px #1eaaa21a;
 }
 
 .list-box p {
@@ -81,24 +164,97 @@
     font-size: 16px;
 }
 
+/* カレンダーモーダル用スタイル（SP版） */
+.calendar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    cursor: pointer;
+}
+
+.calendar-overlay.active {
+    display: block;
+}
+
+.calendar-close-btn {
+    display: flex; /* PC版でも表示 */
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 1001;
+    transition: all 0.3s ease;
+    line-height: 1;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.calendar-close-btn:hover {
+    background-color: #c82333;
+    transform: scale(1.1);
+}
+
 /****** SP版 ******/
 @media (max-width: 768px) {
 
+    .reserve-container { 
+        width: 100%;
+    }
+
+    .calendar-wrapper {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 0 !important;
+        max-width: 0 !important;
+        z-index: 1000;
+        opacity: 0;
+        overflow: hidden;
+        transition: max-width 0.75s ease, width 0.75s ease, opacity 0.75s ease, transform 0.75s ease;
+        will-change: max-width, width, opacity, transform;
+    }
+
+    .calendar-wrapper.active {
+        width: 90% !important;
+        max-width: 450px !important;
+        opacity: 1;
+        transform: translate(-50%, -50%) !important;
+        transition: max-width 0.75s ease, width 0.75s ease, opacity 0.75s ease, transform 0.75s ease;
+    }
+
+    .calendar-close-btn {
+        display: flex;
+    }
+
     .list-box {
-        flex-direction: column;
-        align-items: flex-start;
+        display: flex;
+        align-items: center;
+        /* flex-direction: column; */
+        /* align-items: flex-start; */
         gap: 10px;
     }
 
     .list-box p {
         width: 100%;
-        margin-bottom: 10px;
     }
 
     .list-box button {
-        width: 100%;
-        margin-left: 0;
-        margin-top: 5px;
+        margin: auto;
     }
 }
-
