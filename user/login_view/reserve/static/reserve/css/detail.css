@@ -2,6 +2,14 @@
     /* overflow: hidden; */
 }
 
+#reserve-detail-panel {
+    display: none;
+}
+
+.reserve-detail-panel-detail {
+    display: block;
+}
+
 /* 通常時（出現した時のスタイル） */
 .reserve-container { 
     max-width: 1000px;
@@ -17,15 +25,15 @@
 }
 
 /* PC版の予約詳細パネルを初期状態で非表示 */
-@media (min-width: 769px) {
-    .reserve-detail-panel {
+/* @media (min-width: 769px) {
+    .reserve-detail-panel-detail {
         display: none !important;
     }
     
-    .reserve-detail-panel.active {
+    .reserve-detail-panel-detail.active {
         display: block !important;
     }
-}
+} */
 
 .calendar-wrapper {
     max-width: 0 !important;

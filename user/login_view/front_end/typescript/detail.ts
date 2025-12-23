@@ -6,7 +6,7 @@ interface Window {
 
 // DOMContentLoadedで実行
 document.addEventListener('DOMContentLoaded', () => {
-const calendarBox: HTMLElement | null = document.querySelector('.calendar-wrapper');
+    const calendarBox: HTMLElement | null = document.querySelector('.calendar-wrapper');
     const calendarOverlay: HTMLElement | null = document.querySelector('.calendar-overlay');
     const closeBtn: HTMLElement | null = document.getElementById('calendar-close-btn');
     
@@ -57,13 +57,13 @@ const calendarBox: HTMLElement | null = document.querySelector('.calendar-wrappe
         
         if (window.innerWidth >= 769) {
             // PC版で予約詳細パネルを表示
-            const detailPanel = document.querySelector('.reserve-detail-panel') as HTMLElement | null;
+            const detailPanel = document.querySelector('.reserve-detail-panel-detail') as HTMLElement | null;
             if(detailPanel){
                 detailPanel.classList.add('active');
             }
             const selectedDatePc: HTMLElement | null = document.getElementById('selected-date-display-pc');
             if(selectedDatePc) selectedDatePc.textContent = dateString;
-            const formSectionPc: HTMLElement | null = document.getElementById('reserve-form-section-pc');
+            const formSectionPc: HTMLElement | null = document.getElementById('reserve-form-section-detail-pc');
             if(formSectionPc) formSectionPc.style.display = "none";
         } else {
             const panel: HTMLElement | null = document.getElementById('time-selection-panel');
@@ -135,7 +135,7 @@ const calendarBox: HTMLElement | null = document.querySelector('.calendar-wrappe
             
             // PC版で予約詳細パネルを非表示
             if(window.innerWidth > 768){
-                const detailPanel = document.querySelector('.reserve-detail-panel') as HTMLElement | null;
+                const detailPanel = document.querySelector('.reserve-detail-panel-detail') as HTMLElement | null;
                 if(detailPanel){
                     detailPanel.classList.remove('active');
                 }
@@ -211,7 +211,7 @@ const calendarBox: HTMLElement | null = document.querySelector('.calendar-wrappe
             }
             // PC版で予約詳細パネルを非表示
             if(window.innerWidth > 768){
-                const detailPanel = document.querySelector('.reserve-detail-panel') as HTMLElement | null;
+                const detailPanel = document.querySelector('.reserve-detail-panel-detail') as HTMLElement | null;
                 if(detailPanel){
                     detailPanel.classList.remove('active');
                 }
@@ -274,27 +274,32 @@ const calendarBox: HTMLElement | null = document.querySelector('.calendar-wrappe
             this.classList.add('selected');
             const selectedTime = this.getAttribute('data-time');
             
-            ['pc', ''].forEach(suffix => {
-                const dateDisplay = document.getElementById(`selected-date-display${suffix ? '-' + suffix : ''}`);
-                if (dateDisplay && dateDisplay.textContent !== '日付を選択してください') {
-                    const match = dateDisplay.textContent.match(/(\d+)年(\d+)月(\d+)日/);
+            // detail.html用の処理（reserve-form-section-detail-pcを対象）
+            // reserve-detail-panel-detail内の要素を取得
+            const reserveDetailPanelDetail = document.getElementById('reserve-detail-panel-detail');
+            if (reserveDetailPanelDetail) {
+                const dateDisplayPc = reserveDetailPanelDetail.querySelector('#selected-date-display-pc') as HTMLElement | null;
+                if (dateDisplayPc && dateDisplayPc.textContent !== '日付を選択してください') {
+                    const match = dateDisplayPc.textContent.match(/(\d+)年(\d+)月(\d+)日/);
                     if (match) {
                         const [year, month, day] = [match[1], String(match[2]).padStart(2, '0'), String(match[3]).padStart(2, '0')];
                         const dateString = `${year}-${month}-${day}`;
-                        const formSection = document.getElementById(`reserve-form-section${suffix ? '-' + suffix : ''}`);
-                        const selectedDateInput = document.getElementById(`selected-date-input${suffix ? '-' + suffix : ''}`) as HTMLInputElement | null;
-                        const selectedTimeInput = document.getElementById(`selected-time-input${suffix ? '-' + suffix : ''}`) as HTMLInputElement | null;
-                        const formDateDisplay: HTMLElement | null = document.getElementById(`form-date-display${suffix ? '-' + suffix : ''}`);
-                        const formTimeDisplay: HTMLElement | null = document.getElementById(`form-time-display${suffix ? '-' + suffix : ''}`);
+                        const formSection = reserveDetailPanelDetail.querySelector('#reserve-form-section-detail-pc') as HTMLElement | null;
+                        const selectedDateInput = reserveDetailPanelDetail.querySelector('#selected-date-input-pc') as HTMLInputElement | null;
+                        const selectedTimeInput = reserveDetailPanelDetail.querySelector('#selected-time-input-pc') as HTMLInputElement | null;
+                        const formDateDisplay = reserveDetailPanelDetail.querySelector('#form-date-display-pc') as HTMLElement | null;
+                        const formTimeDisplay = reserveDetailPanelDetail.querySelector('#form-time-display-pc') as HTMLElement | null;
                         
                         if(selectedDateInput) selectedDateInput.value = dateString;
                         if(selectedTimeInput && selectedTime) selectedTimeInput.value = selectedTime;
-                        if(formDateDisplay) formDateDisplay.textContent = dateDisplay.textContent;
+                        if(formDateDisplay) formDateDisplay.textContent = dateDisplayPc.textContent;
                         if(formTimeDisplay && selectedTime) formTimeDisplay.textContent = selectedTime;
-                        if(formSection) formSection.style.display = 'block';
+                        if(formSection) {
+                            formSection.style.display = 'block';
+                        }
                     }
                 }
-            });
+            }
         });
     });
     
@@ -319,7 +324,7 @@ const calendarBox: HTMLElement | null = document.querySelector('.calendar-wrappe
     // キャンセルボタン
     document.getElementById('cancel-reserve')?.addEventListener('click', closeModal);
     document.getElementById('cancel-reserve-pc')?.addEventListener('click', function() {
-        const formSectionPc: HTMLElement | null = document.getElementById('reserve-form-section-pc');
+        const formSectionPc: HTMLElement | null = document.getElementById('reserve-form-section-detail-pc');
         if (formSectionPc) formSectionPc.style.display = 'none';
         document.querySelectorAll<HTMLButtonElement>('.time-btn').forEach((btn) => {
             btn.classList.remove('selected', 'past-time', 'reserved-time');

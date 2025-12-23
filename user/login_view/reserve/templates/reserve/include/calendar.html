@@ -26,9 +26,46 @@
             {% endfor %}
         </div>
     </div>
+
+    <!-- detal.htmlで使用する時間パネル PCカレンダー下側 -->
+    <div class="reserve-detail-panel-detail" id="reserve-detail-panel-detail">
+        <div class="time-selection-content">
+            <div class="time-selection-header">
+                <h3 id="selected-date-display-pc">日付を選択してください</h3>
+                <button class="close-btn pc-close-btn" id="close-time-panel-pc" style="display: none;">&times;</button>
+            </div>
+            <div class="time-slots">
+                <p class="time-label">時間を選択してください（10時〜14時）</p>
+                <div class="time-buttons">
+                    <button class="time-btn" data-time="10:00">10:00</button>
+                    <button class="time-btn" data-time="11:00">11:00</button>
+                    <button class="time-btn" data-time="12:00">12:00</button>
+                    <button class="time-btn" data-time="13:00">13:00</button>
+                    <button class="time-btn" data-time="14:00">14:00</button>
+                </div>
+            </div>
+            <div class="reserve-form-section" id="reserve-form-section-detail-pc" style="display: none;">
+                <form method="POST" action="{% url 'reserve:reseve_create' %}" id="reserve-form-pc">
+                    {% csrf_token %}
+                    <input type="hidden" name="selected_date" id="selected-date-input-pc">
+                    <input type="hidden" name="selected_time" id="selected-time-input-pc">
+                    <div class="form-summary">
+                        <p><strong>予約内容</strong></p>
+                        <p>日付: <span id="form-date-display-pc"></span></p>
+                        <p>時間: <span id="form-time-display-pc"></span></p>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="submit-btn">予約を確定</button>
+                        <button type="button" class="cancel-btn" id="cancel-reserve-pc">キャンセル</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 </div>
 
-<!-- PC版: 右側の予約詳細パネル -->
+<!-- reserve.htmlで使用する時間パネル PC版右側 -->
 <div class="reserve-detail-panel" id="reserve-detail-panel">
     <div class="time-selection-content">
         <div class="time-selection-header">

@@ -79,15 +79,18 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // PC版の場合
         if (window.innerWidth >= 769) { 
-            // 日付表示
-            const selectedDatePc: HTMLElement | null = document.getElementById('selected-date-display-pc');
-            if(selectedDatePc){
-                selectedDatePc.textContent = dateString;
-            }
-            // 予約フォームの非表示
-            const formSectionPc: HTMLElement | null = document.getElementById('reserve-form-section-pc');
-            if(formSectionPc){
-                formSectionPc.style.display = "none";
+            // reserve-detail-panel内のselected-date-display-pcを更新（reserve.html用）
+            const reserveDetailPanel = document.getElementById('reserve-detail-panel');
+            if(reserveDetailPanel){
+                const selectedDatePc = reserveDetailPanel.querySelector('#selected-date-display-pc') as HTMLElement | null;
+                if(selectedDatePc){
+                    selectedDatePc.textContent = dateString;
+                }
+                // 予約フォームの非表示
+                const formSectionPc = reserveDetailPanel.querySelector('#reserve-form-section-pc') as HTMLElement | null;
+                if(formSectionPc){
+                    formSectionPc.style.display = "none";
+                }
             }
 
         // SP版の場合
@@ -222,18 +225,55 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.add('selected');
             const selectedTime = this.getAttribute('data-time');
             
-            ['pc', ''].forEach(suffix => {
-                const dateDisplay = document.getElementById(`selected-date-display${suffix ? '-' + suffix : ''}`);
+            if (!selectedTime) return;
+            
+            // PC版の処理（reserve.html用）
+            if (window.innerWidth >= 769) {
+                // reserve-detail-panel内の要素を取得（reserve.html用）
+                const reserveDetailPanel = document.getElementById('reserve-detail-panel');
+                if (!reserveDetailPanel) return;
+                
+                // reserve-detail-panel内のselected-date-display-pcを取得
+                const dateDisplayPc = reserveDetailPanel.querySelector('#selected-date-display-pc') as HTMLElement | null;
+                
+                if (dateDisplayPc && dateDisplayPc.textContent !== '日付を選択してください') {
+                    console.log("現在の日付表示:", dateDisplayPc.textContent);
+                    const match = dateDisplayPc.textContent.match(/(\d+)年(\d+)月(\d+)日/);
+                    if (match) {
+                        const [year, month, day] = [match[1], String(match[2]).padStart(2, '0'), String(match[3]).padStart(2, '0')];
+                        const dateString = `${year}-${month}-${day}`;
+                        
+                        // reserve-detail-panel内の要素を取得
+                        const formSection = reserveDetailPanel.querySelector('#reserve-form-section-pc') as HTMLElement | null;
+                        const selectedDateInput = reserveDetailPanel.querySelector('#selected-date-input-pc') as HTMLInputElement | null;
+                        const selectedTimeInput = reserveDetailPanel.querySelector('#selected-time-input-pc') as HTMLInputElement | null;
+                        const formDateDisplay = reserveDetailPanel.querySelector('#form-date-display-pc') as HTMLElement | null;
+                        const formTimeDisplay = reserveDetailPanel.querySelector('#form-time-display-pc') as HTMLElement | null;
+                        
+                        if(selectedDateInput) selectedDateInput.value = dateString;
+                        if(selectedTimeInput) selectedTimeInput.value = selectedTime;
+                        if(formDateDisplay) formDateDisplay.textContent = dateDisplayPc.textContent;
+                        if(formTimeDisplay) formTimeDisplay.textContent = selectedTime;
+                        if(formSection) {
+                            formSection.style.display = 'block';
+                        } else {
+                            console.error('reserve-form-section-pc not found in reserve-detail-panel');
+                        }
+                    }
+                }
+            } else {
+                // SP版の処理
+                const dateDisplay = document.getElementById('selected-date-display');
                 if (dateDisplay && dateDisplay.textContent !== '日付を選択してください') {
                     const match = dateDisplay.textContent.match(/(\d+)年(\d+)月(\d+)日/);
                     if (match) {
                         const [year, month, day] = [match[1], String(match[2]).padStart(2, '0'), String(match[3]).padStart(2, '0')];
                         const dateString = `${year}-${month}-${day}`;
-                        const formSection = document.getElementById(`reserve-form-section${suffix ? '-' + suffix : ''}`);
-                        const selectedDateInput = document.getElementById(`selected-date-input${suffix ? '-' + suffix : ''}`) as HTMLInputElement | null;
-                        const selectedTimeInput = document.getElementById(`selected-time-input${suffix ? '-' + suffix : ''}`) as HTMLInputElement | null;
-                        const formDateDisplay: HTMLElement | null = document.getElementById(`form-date-display${suffix ? '-' + suffix : ''}`);
-                        const formTimeDisplay: HTMLElement | null = document.getElementById(`form-time-display${suffix ? '-' + suffix : ''}`);
+                        const formSection = document.getElementById('reserve-form-section');
+                        const selectedDateInput = document.getElementById('selected-date-input') as HTMLInputElement | null;
+                        const selectedTimeInput = document.getElementById('selected-time-input') as HTMLInputElement | null;
+                        const formDateDisplay: HTMLElement | null = document.getElementById('form-date-display');
+                        const formTimeDisplay: HTMLElement | null = document.getElementById('form-time-display');
                         
                         if(selectedDateInput) selectedDateInput.value = dateString;
                         if(selectedTimeInput) selectedTimeInput.value = selectedTime;
@@ -242,7 +282,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         if(formSection) formSection.style.display = 'block';
                     }
                 }
-            });
+            }
         });
     });
     

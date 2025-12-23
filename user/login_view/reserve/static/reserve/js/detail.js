@@ -48,14 +48,14 @@ document.addEventListener('DOMContentLoaded', () => {
         updateTimeButtons(date);
         if (window.innerWidth >= 769) {
             // PC版で予約詳細パネルを表示
-            const detailPanel = document.querySelector('.reserve-detail-panel');
+            const detailPanel = document.querySelector('.reserve-detail-panel-detail');
             if (detailPanel) {
                 detailPanel.classList.add('active');
             }
             const selectedDatePc = document.getElementById('selected-date-display-pc');
             if (selectedDatePc)
                 selectedDatePc.textContent = dateString;
-            const formSectionPc = document.getElementById('reserve-form-section-pc');
+            const formSectionPc = document.getElementById('reserve-form-section-detail-pc');
             if (formSectionPc)
                 formSectionPc.style.display = "none";
         }
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
             calendarBox.style.alignSelf = '';
             // PC版で予約詳細パネルを非表示
             if (window.innerWidth > 768) {
-                const detailPanel = document.querySelector('.reserve-detail-panel');
+                const detailPanel = document.querySelector('.reserve-detail-panel-detail');
                 if (detailPanel) {
                     detailPanel.classList.remove('active');
                 }
@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             // PC版で予約詳細パネルを非表示
             if (window.innerWidth > 768) {
-                const detailPanel = document.querySelector('.reserve-detail-panel');
+                const detailPanel = document.querySelector('.reserve-detail-panel-detail');
                 if (detailPanel) {
                     detailPanel.classList.remove('active');
                 }
@@ -262,31 +262,35 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
             this.classList.add('selected');
             const selectedTime = this.getAttribute('data-time');
-            ['pc', ''].forEach(suffix => {
-                const dateDisplay = document.getElementById(`selected-date-display${suffix ? '-' + suffix : ''}`);
-                if (dateDisplay && dateDisplay.textContent !== '日付を選択してください') {
-                    const match = dateDisplay.textContent.match(/(\d+)年(\d+)月(\d+)日/);
+            // detail.html用の処理（reserve-form-section-detail-pcを対象）
+            // reserve-detail-panel-detail内の要素を取得
+            const reserveDetailPanelDetail = document.getElementById('reserve-detail-panel-detail');
+            if (reserveDetailPanelDetail) {
+                const dateDisplayPc = reserveDetailPanelDetail.querySelector('#selected-date-display-pc');
+                if (dateDisplayPc && dateDisplayPc.textContent !== '日付を選択してください') {
+                    const match = dateDisplayPc.textContent.match(/(\d+)年(\d+)月(\d+)日/);
                     if (match) {
                         const [year, month, day] = [match[1], String(match[2]).padStart(2, '0'), String(match[3]).padStart(2, '0')];
                         const dateString = `${year}-${month}-${day}`;
-                        const formSection = document.getElementById(`reserve-form-section${suffix ? '-' + suffix : ''}`);
-                        const selectedDateInput = document.getElementById(`selected-date-input${suffix ? '-' + suffix : ''}`);
-                        const selectedTimeInput = document.getElementById(`selected-time-input${suffix ? '-' + suffix : ''}`);
-                        const formDateDisplay = document.getElementById(`form-date-display${suffix ? '-' + suffix : ''}`);
-                        const formTimeDisplay = document.getElementById(`form-time-display${suffix ? '-' + suffix : ''}`);
+                        const formSection = reserveDetailPanelDetail.querySelector('#reserve-form-section-detail-pc');
+                        const selectedDateInput = reserveDetailPanelDetail.querySelector('#selected-date-input-pc');
+                        const selectedTimeInput = reserveDetailPanelDetail.querySelector('#selected-time-input-pc');
+                        const formDateDisplay = reserveDetailPanelDetail.querySelector('#form-date-display-pc');
+                        const formTimeDisplay = reserveDetailPanelDetail.querySelector('#form-time-display-pc');
                         if (selectedDateInput)
                             selectedDateInput.value = dateString;
                         if (selectedTimeInput && selectedTime)
                             selectedTimeInput.value = selectedTime;
                         if (formDateDisplay)
-                            formDateDisplay.textContent = dateDisplay.textContent;
+                            formDateDisplay.textContent = dateDisplayPc.textContent;
                         if (formTimeDisplay && selectedTime)
                             formTimeDisplay.textContent = selectedTime;
-                        if (formSection)
+                        if (formSection) {
                             formSection.style.display = 'block';
+                        }
                     }
                 }
-            });
+            }
         });
     });
     // モーダル関連のイベントリスナー
@@ -311,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // キャンセルボタン
     (_a = document.getElementById('cancel-reserve')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', closeModal);
     (_b = document.getElementById('cancel-reserve-pc')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', function () {
-        const formSectionPc = document.getElementById('reserve-form-section-pc');
+        const formSectionPc = document.getElementById('reserve-form-section-detail-pc');
         if (formSectionPc)
             formSectionPc.style.display = 'none';
         document.querySelectorAll('.time-btn').forEach((btn) => {

@@ -1,6 +1,7 @@
 /* デフォルト（スマホ版）のスタイル */
 .reserve-container {
     display: flex;
+    justify-content: center;
     flex-direction: column;
     gap: 20px;
     width: 100%;
@@ -26,12 +27,17 @@
 
 /* PC版: 右側の予約詳細パネル（デフォルト：非表示） */
 .reserve-detail-panel {
-    display: none;
+    max-width: 500px;
+    /* display: none; */
     background-color: #fff;
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     padding: 0;
     width: 100%;
+}
+
+.reserve-detail-panel-detail {
+    display: none;
 }
 
 .calendar-header {
@@ -427,7 +433,6 @@
     }
     
     .reserve-detail-panel {
-        display: block !important;
         flex: 1;
         min-width: 0;
         position: sticky;
