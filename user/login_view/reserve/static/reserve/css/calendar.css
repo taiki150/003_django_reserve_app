@@ -134,15 +134,15 @@
 .calendar-day.today {
     background-color: #f3d0a4;
     font-weight: bold;
-    border-color: #1eaaa2;
+    border-color: red;
 }
 
 .calendar-day.selected {
-    background-color: #1eaaa2;
-    /* border-color: #1eaaa2; */
-    border-width: 2px;
-    font-weight: bold;
-    color: #fff;
+    background-color: #1eaaa2 !important;
+    border-color: #1eaaa2 !important;
+    border-width: 2px !important;
+    font-weight: bold !important;
+    color: #fff !important;
 }
 
 .calendar-day.other-month {
@@ -192,8 +192,7 @@
 /* 予約済みかつ今日の日付 */
 .calendar-day.reserved-date.today {
     background-color: #ffd700;
-    border-color: #1eaaa2;
-    box-shadow: 0 0 0 2px #1eaaa2;
+    border-color: red;
 }
 
 /* モーダルオーバーレイ */

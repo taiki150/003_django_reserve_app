@@ -11,7 +11,8 @@
     "module": "none"
   },
   "files": [
-    "typescript/reserve_async.ts"
+    "typescript/reserve_async.ts",
+    "typescript/detail.ts"
   ]
 }
 

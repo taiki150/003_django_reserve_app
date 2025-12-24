@@ -3,25 +3,18 @@ interface Window {
     reservedTimesByDate?: { [date: string]: string[] };
 }
 
-const submitBtn = document.querySelector('.submit-btn') as HTMLButtonElement;
-
 // 予約作成の非同期処理
-const createReservation = async () => {
-    // SP版とPC版の両方のhidden input要素を取得
-    let selectedDate: HTMLInputElement | null = null;
-    let selectedTime: HTMLInputElement | null = null;
-    const csrfToken = (document.querySelector('[name=csrfmiddlewaretoken]') as HTMLInputElement).value;
-
-    if(window.innerWidth < 768){
-        selectedDate = document.getElementById('selected-date-input') as HTMLInputElement | null;
-        selectedTime = document.getElementById('selected-time-input') as HTMLInputElement | null;
-    }else{
-        selectedDate = document.getElementById('selected-date-input-pc') as HTMLInputElement | null;
-        selectedTime = document.getElementById('selected-time-input-pc') as HTMLInputElement | null;
+const createReservation = async (dateValue: string, timeValue: string) => {
+    const csrfToken = (document.querySelector('[name=csrfmiddlewaretoken]') as HTMLInputElement)?.value;
+    
+    if (!csrfToken) {
+        throw new Error('CSRFトークンが見つかりません');
     }
-
-    const dateValue = selectedDate?.value;
-    const timeValue = selectedTime?.value;
+    
+    if (!dateValue || !timeValue) {
+        throw new Error('日付または時間が選択されていません');
+    }
+    
     return await fetch('/reserve/api/reservation/create/',{
         method: 'POST',
         headers: {
@@ -66,7 +59,6 @@ const updateDisplay = (dateStr: string, timeStr: string): void => {
 const MyAsync = async (actionName: string, task: () => Promise<Response>, dateStr?: string, timeStr?: string) => {
     console.log(`${actionName}を開始します...`);
     try{
-        console.log("-------------------------------- 成功です --------------------------------");
         const response = await task();
 
         if (response.ok) {
@@ -74,23 +66,57 @@ const MyAsync = async (actionName: string, task: () => Promise<Response>, dateSt
             if (actionName === '予約作成' && dateStr && timeStr) updateDisplay(dateStr, timeStr);
             alert(`${actionName}に成功しました！`);
         } else {
-            console.log("-------------------------------- サーバーエラーです --------------------------------");
+            // エラーレスポンスの詳細を取得
+            const errorData = await response.json().catch(() => ({ error: 'エラーの詳細を取得できませんでした' }));
+            console.error("-------------------------------- サーバーエラーです --------------------------------");
+            console.error("ステータス:", response.status);
+            console.error("エラー内容:", errorData);
+            alert(`${actionName}に失敗しました: ${errorData.error || 'サーバーエラーが発生しました'}`);
         }
         
     }catch(error){
+        console.error("-------------------------------- 失敗です --------------------------------");
         console.error(error);
-        console.log("-------------------------------- 失敗です --------------------------------");
+        alert(`${actionName}に失敗しました: ${error instanceof Error ? error.message : '予期しないエラーが発生しました'}`);
     }
 }
 
-// 予約登録のボタンクリックで非同期処理を実行
-submitBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
-    const date = (window.innerWidth < 768 ? 
-        document.getElementById('selected-date-input') : 
-        document.getElementById('selected-date-input-pc')) as HTMLInputElement;
-    const time = (window.innerWidth < 768 ? 
-        document.getElementById('selected-time-input') : 
-        document.getElementById('selected-time-input-pc')) as HTMLInputElement;
-    await MyAsync('予約作成', createReservation, date?.value, time?.value);
+// 予約登録のボタンクリックで非同期処理を実行（イベント委譲を使用）
+// PC版・スマホ版どちらのボタンがクリックされても同じ処理を実行
+document.addEventListener('click', async (e) => {
+    const target = e.target as HTMLElement;
+    // .submit-btnがクリックされた場合のみ処理を実行
+    if (target.classList.contains('submit-btn')) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // クリックされたボタンが含まれるformを取得
+        const form = target.closest('form') as HTMLFormElement;
+        if (!form) return;
+
+        // IDではなく名前（name属性）で探すと、そのフォーム専用の入力欄が確実に取れます
+
+        
+        // form内のhidden inputから日付と時間を取得
+        // スマホ版: selected-date-input, selected-time-input
+        // PC版: selected-date-input-pc, selected-time-input-pc
+        const dateInput = form.querySelector('[name="selected_date"]') as HTMLInputElement;
+        const timeInput = form.querySelector('[name="selected_time"]') as HTMLInputElement;
+               
+        if (!dateInput || !timeInput) {
+            alert('日付または時間が選択されていません');
+            return;
+        }
+        
+        const dateValue = dateInput.value;
+        const timeValue = timeInput.value;
+        
+        if (!dateValue || !timeValue) {
+            alert('日付または時間が選択されていません');
+            return;
+        }
+        
+        // 日付と時間を引数として渡す
+        await MyAsync('予約作成', () => createReservation(dateValue, timeValue), dateValue, timeValue);
+    }
 });

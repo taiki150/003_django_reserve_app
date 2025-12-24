@@ -288,18 +288,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // キャンセルボタン
     document.getElementById('cancel-reserve')?.addEventListener('click', closeModal);
-    document.getElementById('cancel-reserve-pc')?.addEventListener('click', function() {
-        const formSectionPc: HTMLElement | null = document.getElementById('reserve-form-section-pc');
-        if (formSectionPc) formSectionPc.style.display = 'none';
-        document.querySelectorAll<HTMLButtonElement>('.time-btn').forEach((btn) => {
-            btn.classList.remove('selected', 'past-time', 'reserved-time');
-            btn.disabled = false;
-            // 「※予約済」のspanを削除
-            const reservedSpan: Element | null = btn.querySelector('.reserved-badge');
-            if (reservedSpan) reservedSpan.remove();
-        });
-        document.querySelectorAll('.calendar-day.selected').forEach((el: Element) => el.classList.remove('selected'));
-    });
     
     // ウィンドウリサイズ時の処理
     window.addEventListener('resize', function() {

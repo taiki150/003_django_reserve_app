@@ -45,7 +45,7 @@
                 </div>
             </div>
             <div class="reserve-form-section" id="reserve-form-section-detail-pc" style="display: none;">
-                <form method="POST" action="{% url 'reserve:reseve_create' %}" id="reserve-form-pc">
+                <form method="POST" id="reserve-form-pc">
                     {% csrf_token %}
                     <input type="hidden" name="selected_date" id="selected-date-input-pc">
                     <input type="hidden" name="selected_time" id="selected-time-input-pc">
@@ -55,8 +55,7 @@
                         <p>時間: <span id="form-time-display-pc"></span></p>
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="submit-btn">予約を確定</button>
-                        <button type="button" class="cancel-btn" id="cancel-reserve-pc">キャンセル</button>
+                        <button type="button" class="submit-btn">予約を確定</button>
                     </div>
                 </form>
             </div>
@@ -83,7 +82,7 @@
             </div>
         </div>
         <div class="reserve-form-section" id="reserve-form-section-pc" style="display: none;">
-            <form method="POST" action="{% url 'reserve:reseve_create' %}" id="reserve-form-pc">
+            <form method="POST" id="reserve-form-pc">
                 {% csrf_token %}
                 <input type="hidden" name="selected_date" id="selected-date-input-pc">
                 <input type="hidden" name="selected_time" id="selected-time-input-pc">
@@ -93,8 +92,7 @@
                     <p>時間: <span id="form-time-display-pc"></span></p>
                 </div>
                 <div class="form-actions">
-                    <button type="submit" class="submit-btn">予約を確定</button>
-                    <button type="button" class="cancel-btn" id="cancel-reserve-pc">キャンセル</button>
+                    <button type="button" class="submit-btn">予約を確定</button>
                 </div>
             </form>
         </div>

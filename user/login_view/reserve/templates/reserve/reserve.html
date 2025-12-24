@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="{% static 'reserve/css/calendar.css' %}">
 {% endblock %}
 {% block content %}
-<h3>予約画面</h3>
+<h3>予約画面</h3><input type="text">
 <p>{{ user.username }}さんの予約画面です</p>
 <div class="main_contents">
     <div class="reserve-container">
@@ -37,7 +37,7 @@
             </div>
         </div>
         <div class="reserve-form-section" id="reserve-form-section" style="display: none;">
-            <form method="POST" action="{% url 'reserve:reseve_create' %}" id="reserve-form">
+            <form method="POST" id="reserve-form">
                 {% csrf_token %}
                 <input type="hidden" name="selected_date" id="selected-date-input">
                 <input type="hidden" name="selected_time" id="selected-time-input">
@@ -47,7 +47,7 @@
                     <p>時間: <span id="form-time-display"></span></p>
                 </div>
                 <div class="form-actions">
-                    <button type="submit" class="submit-btn">予約を確定</button>
+                    <button type="button" class="submit-btn">予約を確定</button>
                     <button type="button" class="cancel-btn" id="cancel-reserve">キャンセル</button>
                 </div>
             </form>

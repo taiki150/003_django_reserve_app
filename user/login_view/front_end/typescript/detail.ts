@@ -66,12 +66,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const formSectionPc: HTMLElement | null = document.getElementById('reserve-form-section-detail-pc');
             if(formSectionPc) formSectionPc.style.display = "none";
         } else {
+            // SP版の場合：日付をクリックしたら時間パネルを表示
             const panel: HTMLElement | null = document.getElementById('time-selection-panel');
             const overlay: HTMLElement | null = document.getElementById('modal-overlay');
             const selectedDate: HTMLElement | null = document.getElementById('selected-date-display');
+            const formSection: HTMLElement | null = document.getElementById('reserve-form-section');
+            
+            // 日付の挿入
             if(selectedDate) selectedDate.textContent = dateString;
+            
+            // 背景暗く・時間パネルの表示・スクロール禁止・予約フォームの非表示
             if(overlay) overlay.classList.add('active');
             if(panel) panel.classList.add('active');
+            if(formSection) formSection.style.display = "none";
             document.body.style.overflow = 'hidden';
         }
     }
@@ -226,7 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // リサイズ時にも実行
     window.addEventListener('resize', toggleCalendarDisplay);
     
-    // バツボタンで閉じる
+    // バツボタンでカレンダーを閉じる
     if(closeBtn){
         closeBtn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -234,18 +241,94 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // オーバーレイ（背景）をクリックしたら閉じる
+    // 背景をクリックしたらカレンダーを閉じる
     if(calendarOverlay){
         calendarOverlay.addEventListener('click', () => {
             closeCalendar();
         });
     }
     
-    // 削除ボタンと編集ボタンのイベントリスナー（動的に生成されるボタンに対応）
+    // 親Boxの選択状態を管理する関数
+    function highlightParentBox(button: Element): void {
+        // すべてのBoxから選択状態を解除
+        document.querySelectorAll('.list-box-container').forEach((box: Element) => {
+            box.classList.remove('selected');
+        });
+        
+        // ボタンのidから日付部分を抽出（例: "2025-12-14-10-00-delete-btn" → "2025-12-14"）
+        const buttonId = button.id;
+        const dateMatch = buttonId.match(/^(\d{4}-\d{2}-\d{2})-/);
+        
+        if (dateMatch) {
+            const dateIso = dateMatch[1];
+            const parentBox = document.getElementById(`${dateIso}-box`);
+            if (parentBox) {
+                parentBox.classList.add('selected');
+            }
+        }
+    }
+    
+    // 現在選択されている予約を追跡（日付-時間の形式、例: "2025-12-14-10-00"）
+    let currentSelectedReservation: string | null = null;
+    
+    // ボタンを無効化する関数
+    function disableButton(button: Element): void {
+        const htmlButton = button as HTMLButtonElement;
+        htmlButton.disabled = true;
+        htmlButton.classList.add('processing');
+    }
+    
+    // ボタンを有効化する関数
+    function enableButton(button: Element): void {
+        const htmlButton = button as HTMLButtonElement;
+        htmlButton.disabled = false;
+        htmlButton.classList.remove('processing');
+    }
+    
+    // ボタンのidから予約識別子を抽出（例: "2025-12-14-10-00-delete-btn" → "2025-12-14-10-00"）
+    function getReservationIdFromButton(buttonId: string): string | null {
+        const match = buttonId.match(/^(\d{4}-\d{2}-\d{2}-\d{2}-\d{2})-/);
+        return match ? match[1] : null;
+    }
+    
+    // 特定の予約に対応する編集ボタンのみを無効化（削除ボタンは無効化しない）
+    function disableReservationButtons(reservationId: string): void {
+        const editBtn = document.getElementById(`${reservationId}-edit-btn`);
+        if (editBtn) disableButton(editBtn);
+    }
+    
+    // 特定の予約に対応する編集ボタンのみを有効化（削除ボタンは常に有効）
+    function enableReservationButtons(reservationId: string): void {
+        const editBtn = document.getElementById(`${reservationId}-edit-btn`);
+        if (editBtn) enableButton(editBtn);
+    }
+    
+    // 削除ボタンのイベントリスナー（動的に生成されるボタンに対応）
     document.querySelectorAll('[id$="-delete-btn"]').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
             console.log('削除ボタンがクリックされました:', btn.id);
-    });
+            highlightParentBox(btn);
+            
+            // ボタンのidから予約識別子を取得
+            const reservationId = getReservationIdFromButton(btn.id);
+            if (!reservationId) return;
+            
+            // 以前に選択されていた予約の編集ボタンを有効化
+            if (currentSelectedReservation && currentSelectedReservation !== reservationId) {
+                enableReservationButtons(currentSelectedReservation);
+            }
+            
+            // 新しく選択された予約の編集ボタンを無効化
+            currentSelectedReservation = reservationId;
+            disableReservationButtons(reservationId);
+            
+            try {
+                // ここに削除処理を実装
+                // 例: await deleteReservation(...);
+            } catch (error) {
+                console.error('削除処理でエラーが発生しました:', error);
+            }
+        });
     });
 
     // モーダルを閉じる
@@ -274,26 +357,54 @@ document.addEventListener('DOMContentLoaded', () => {
             this.classList.add('selected');
             const selectedTime = this.getAttribute('data-time');
             
-            // detail.html用の処理（reserve-form-section-detail-pcを対象）
-            // reserve-detail-panel-detail内の要素を取得
-            const reserveDetailPanelDetail = document.getElementById('reserve-detail-panel-detail');
-            if (reserveDetailPanelDetail) {
-                const dateDisplayPc = reserveDetailPanelDetail.querySelector('#selected-date-display-pc') as HTMLElement | null;
-                if (dateDisplayPc && dateDisplayPc.textContent !== '日付を選択してください') {
-                    const match = dateDisplayPc.textContent.match(/(\d+)年(\d+)月(\d+)日/);
+            if (!selectedTime) return;
+            
+            // PC版の処理
+            if (window.innerWidth >= 769) {
+                // detail.html用の処理（reserve-form-section-detail-pcを対象）
+                // reserve-detail-panel-detail内の要素を取得
+                const reserveDetailPanelDetail = document.getElementById('reserve-detail-panel-detail');
+                if (reserveDetailPanelDetail) {
+                    const dateDisplayPc = reserveDetailPanelDetail.querySelector('#selected-date-display-pc') as HTMLElement | null;
+                    if (dateDisplayPc && dateDisplayPc.textContent !== '日付を選択してください') {
+                        const match = dateDisplayPc.textContent.match(/(\d+)年(\d+)月(\d+)日/);
+                        if (match) {
+                            const [year, month, day] = [match[1], String(match[2]).padStart(2, '0'), String(match[3]).padStart(2, '0')];
+                            const dateString = `${year}-${month}-${day}`;
+                            const formSection = reserveDetailPanelDetail.querySelector('#reserve-form-section-detail-pc') as HTMLElement | null;
+                            const selectedDateInput = reserveDetailPanelDetail.querySelector('#selected-date-input-pc') as HTMLInputElement | null;
+                            const selectedTimeInput = reserveDetailPanelDetail.querySelector('#selected-time-input-pc') as HTMLInputElement | null;
+                            const formDateDisplay = reserveDetailPanelDetail.querySelector('#form-date-display-pc') as HTMLElement | null;
+                            const formTimeDisplay = reserveDetailPanelDetail.querySelector('#form-time-display-pc') as HTMLElement | null;
+                            
+                            if(selectedDateInput) selectedDateInput.value = dateString;
+                            if(selectedTimeInput) selectedTimeInput.value = selectedTime;
+                            if(formDateDisplay) formDateDisplay.textContent = dateDisplayPc.textContent;
+                            if(formTimeDisplay) formTimeDisplay.textContent = selectedTime;
+                            if(formSection) {
+                                formSection.style.display = 'block';
+                            }
+                        }
+                    }
+                }
+            } else {
+                // SP版の処理
+                const dateDisplay = document.getElementById('selected-date-display');
+                if (dateDisplay && dateDisplay.textContent !== '日付を選択してください') {
+                    const match = dateDisplay.textContent.match(/(\d+)年(\d+)月(\d+)日/);
                     if (match) {
                         const [year, month, day] = [match[1], String(match[2]).padStart(2, '0'), String(match[3]).padStart(2, '0')];
                         const dateString = `${year}-${month}-${day}`;
-                        const formSection = reserveDetailPanelDetail.querySelector('#reserve-form-section-detail-pc') as HTMLElement | null;
-                        const selectedDateInput = reserveDetailPanelDetail.querySelector('#selected-date-input-pc') as HTMLInputElement | null;
-                        const selectedTimeInput = reserveDetailPanelDetail.querySelector('#selected-time-input-pc') as HTMLInputElement | null;
-                        const formDateDisplay = reserveDetailPanelDetail.querySelector('#form-date-display-pc') as HTMLElement | null;
-                        const formTimeDisplay = reserveDetailPanelDetail.querySelector('#form-time-display-pc') as HTMLElement | null;
+                        const formSection = document.getElementById('reserve-form-section');
+                        const selectedDateInput = document.getElementById('selected-date-input') as HTMLInputElement | null;
+                        const selectedTimeInput = document.getElementById('selected-time-input') as HTMLInputElement | null;
+                        const formDateDisplay = document.getElementById('form-date-display') as HTMLElement | null;
+                        const formTimeDisplay = document.getElementById('form-time-display') as HTMLElement | null;
                         
                         if(selectedDateInput) selectedDateInput.value = dateString;
-                        if(selectedTimeInput && selectedTime) selectedTimeInput.value = selectedTime;
-                        if(formDateDisplay) formDateDisplay.textContent = dateDisplayPc.textContent;
-                        if(formTimeDisplay && selectedTime) formTimeDisplay.textContent = selectedTime;
+                        if(selectedTimeInput) selectedTimeInput.value = selectedTime;
+                        if(formDateDisplay) formDateDisplay.textContent = dateDisplay.textContent;
+                        if(formTimeDisplay) formTimeDisplay.textContent = selectedTime;
                         if(formSection) {
                             formSection.style.display = 'block';
                         }
@@ -337,8 +448,27 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 編集ボタン：PC版・SP版両方でカレンダーを表示
     document.querySelectorAll('[id$="-edit-btn"]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            openCalendar();
-    });
+        btn.addEventListener('click', async () => {
+            highlightParentBox(btn);
+            
+            // ボタンのidから予約識別子を取得
+            const reservationId = getReservationIdFromButton(btn.id);
+            if (!reservationId) return;
+            
+            // 以前に選択されていた予約のボタンを有効化
+            if (currentSelectedReservation && currentSelectedReservation !== reservationId) {
+                enableReservationButtons(currentSelectedReservation);
+            }
+            
+            // 新しく選択された予約のボタンを無効化
+            currentSelectedReservation = reservationId;
+            disableReservationButtons(reservationId);
+            
+            try {
+                openCalendar();
+            } catch (error) {
+                console.error('編集処理でエラーが発生しました:', error);
+            }
+        });
     });
 });

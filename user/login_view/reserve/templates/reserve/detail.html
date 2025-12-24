@@ -8,20 +8,82 @@
 <h3>予約一覧画面</h3>
 <div class="reserve-container">
     <ul>
-        {% for date, times in reserved_times_by_date.items%}
-            {% for time in times %}
-            <h4>{{ date }}</h4>
+        {% for date, date_data in reserved_times_by_date.items%}
+        <div class="list-box-container" id="{{ date_data.date_iso }}-box">
+        <h4>{{ date }}</h4>
+            {% for time_data in date_data.times %}
                 <li>
                     <div class="list-box">
-                        <p>{{ time }}</p>
-                        <button id="{{ date }}-{{ time }}-delete-btn">削除</button>
-                        <button id="{{ date }}-{{ time }}-edit-btn">編集</button>
+                        <p>{{ time_data.display }}</p>
+                        <button id="{{ date_data.date_iso }}-{{ time_data.id }}-delete-btn">削除</button>
+                        <button id="{{ date_data.date_iso }}-{{ time_data.id }}-edit-btn">編集</button>
                     </div>
                 </li>
             {% endfor %}
+            </div>
         {% endfor %}
     </ul>
     {% include 'reserve/include/calendar.html' %}
 </div>
+
+<!-- モーダルオーバーレイ（スマホ版用） -->
+<div class="modal-overlay" id="modal-overlay"></div>
+
+<!-- 時間選択モーダル（スマホ版用） -->
+<div class="time-selection-modal" id="time-selection-panel">
+    <div class="time-selection-content">
+        <div class="time-selection-header">
+            <h3 id="selected-date-display">日付を選択してください</h3>
+            <button class="close-btn" id="close-time-panel">&times;</button>
+        </div>
+        <div class="time-slots">
+            <p class="time-label">時間を選択してください（10時〜14時）</p>
+            <div class="time-buttons">
+                <button class="time-btn" data-time="10:00">10:00</button>
+                <button class="time-btn" data-time="11:00">11:00</button>
+                <button class="time-btn" data-time="12:00">12:00</button>
+                <button class="time-btn" data-time="13:00">13:00</button>
+                <button class="time-btn" data-time="14:00">14:00</button>
+            </div>
+        </div>
+        <div class="reserve-form-section" id="reserve-form-section" style="display: none;">
+            <form method="POST" id="reserve-form">
+                {% csrf_token %}
+                <input type="hidden" name="selected_date" id="selected-date-input">
+                <input type="hidden" name="selected_time" id="selected-time-input">
+                <div class="form-summary">
+                    <p><strong>予約内容</strong></p>
+                    <p>日付: <span id="form-date-display"></span></p>
+                    <p>時間: <span id="form-time-display"></span></p>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="submit-btn">予約を変更</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 予約済み日付データをJavaScriptに渡す -->
+<script>
+    // Djangoから予約済み日付のリストを取得
+    window.reservedDates = [
+        {% for date in reserved_dates %}
+        '{{ date }}'{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+    
+    // Djangoから予約済み時間の辞書を取得（日付ごと）
+    window.reservedTimesByDate = {
+        {% for date, times in reserved_times_by_date_js.items %}
+        '{{ date }}': [
+            {% for time in times %}
+            '{{ time }}'{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ]{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    };
+</script>
+
 <script src="{% static 'reserve/js/detail.js' %}"></script>
 {% endblock %}

@@ -25,15 +25,11 @@
 }
 
 /* PC版の予約詳細パネルを初期状態で非表示 */
-/* @media (min-width: 769px) {
+@media (max-width: 768px) {
     .reserve-detail-panel-detail {
-        display: none !important;
+        display: none;
     }
-    
-    .reserve-detail-panel-detail.active {
-        display: block !important;
-    }
-} */
+}
 
 .calendar-wrapper {
     max-width: 0 !important;
@@ -88,7 +84,7 @@
 }
 
 .main_contents li {
-    margin-bottom: 50px;
+    margin-bottom: 30px;
 }
 
 h4 {
@@ -101,21 +97,30 @@ h4 {
     color: #1eaaa2;
 }
 
-.list-box {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.list-box-container{
     padding: 15px 20px;
     background-color: #f8f9fa;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     transition: all 0.3s ease;
+    margin-bottom: 30px;
 }
 
-.list-box:hover {
-    background-color: #e8f5f4;
-    border-color: #1eaaa2;
-    box-shadow: 0 2px 5px #1eaaa21a;
+.list-box-container.selected{
+    background-color: #e3f2fd;
+    border: 2px solid #2196f3;
+    box-shadow: 0 4px 8px rgba(33, 150, 243, 0.2);
+}
+
+.list-box-container li:last-child{
+    margin-bottom: 0;
+}
+
+.list-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
 }
 
 .list-box p {
@@ -161,6 +166,24 @@ h4 {
 
 .list-box button:active {
     transform: translateY(0);
+}
+
+/* ボタンが無効化されている時のスタイル */
+.list-box button:disabled,
+.list-box button.processing {
+    background-color: #cccccc !important;
+    color: #666666 !important;
+    cursor: not-allowed !important;
+    opacity: 0.6;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.list-box button:disabled:hover,
+.list-box button.processing:hover {
+    background-color: #cccccc !important;
+    transform: none !important;
+    box-shadow: none !important;
 }
 
 .main_contents ul:empty::before {
