@@ -107,9 +107,13 @@ h4 {
 }
 
 .list-box-container.selected{
-    background-color: #e3f2fd;
-    border: 2px solid #2196f3;
-    box-shadow: 0 4px 8px rgba(33, 150, 243, 0.2);
+    background-color: #eaf5f4;
+    border: 2px solid #1eaaa2;
+    box-shadow: 0 4px 8px #58a8a4;
+}
+
+.list-box-container.past-date{
+    display: none;
 }
 
 .list-box-container li:last-child{
@@ -171,8 +175,8 @@ h4 {
 /* ボタンが無効化されている時のスタイル */
 .list-box button:disabled,
 .list-box button.processing {
-    background-color: #cccccc !important;
-    color: #666666 !important;
+    background-color: #ffd700 !important;
+    color: #000 !important;
     cursor: not-allowed !important;
     opacity: 0.6;
     transform: none !important;
@@ -181,7 +185,7 @@ h4 {
 
 .list-box button:disabled:hover,
 .list-box button.processing:hover {
-    background-color: #cccccc !important;
+    background-color: #ffd700 !important;
     transform: none !important;
     box-shadow: none !important;
 }

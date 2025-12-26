@@ -12,6 +12,13 @@ type ReservedTimesByDate = { [date: string]: string[] };
 interface Window {
     reservedDates?: ReservedDatesArray;
     reservedTimesByDate?: ReservedTimesByDate;
+    editingReservation?: { date: string, time: string } | null;
+}
+
+// 日付を表示形式に変換する関数（YYYY-MM-DD → YYYY年MM月DD日）
+function formatDateForDisplay(dateStr: string): string {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return `${year}年${month}月${day}日`;
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -123,7 +130,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const dateStr: string = `${selectedDate.year}-${String(selectedDate.month).padStart(2, '0')}-${String(selectedDate.day).padStart(2, '0')}`;
         
         // 選択された日付の予約済み時間を取得
-        const reservedTimes: string[] = window.reservedTimesByDate?.[dateStr] || [];
+        let reservedTimes: string[] = window.reservedTimesByDate?.[dateStr] || [];
+        
+        // 編集モードの場合、編集対象の予約の時間を除外（編集可能にするため）
+        if (window.editingReservation && window.editingReservation.date === dateStr) {
+            reservedTimes = reservedTimes.filter(time => time !== window.editingReservation!.time);
+        }
         
         // 今日の判定
         const isToday: boolean = selectedDateObj.getTime() === today.getTime();
@@ -221,6 +233,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.time-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             if (this.classList.contains('past-time') || this.disabled) return;
+            // 編集対象の時間ボタンのマークを解除
+            document.querySelectorAll('.time-btn.editing-time').forEach((b: Element) => {
+                b.classList.remove('editing-time');
+                (b as HTMLButtonElement).disabled = false;
+            });
             document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
             this.classList.add('selected');
             const selectedTime = this.getAttribute('data-time');
@@ -252,8 +269,17 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         if(selectedDateInput) selectedDateInput.value = dateString;
                         if(selectedTimeInput) selectedTimeInput.value = selectedTime;
-                        if(formDateDisplay) formDateDisplay.textContent = dateDisplayPc.textContent;
-                        if(formTimeDisplay) formTimeDisplay.textContent = selectedTime;
+                        
+                        // 編集モードの場合は変更前と変更後を表示
+                        if ((window as any).editingReservation && formDateDisplay && formTimeDisplay) {
+                            const oldDateDisplay = formatDateForDisplay((window as any).editingReservation.date);
+                            const oldTimeDisplay = (window as any).editingReservation.time;
+                            formDateDisplay.textContent = `${oldDateDisplay} → ${dateDisplayPc.textContent}`;
+                            formTimeDisplay.textContent = `${oldTimeDisplay} → ${selectedTime}`;
+                        } else {
+                            if(formDateDisplay) formDateDisplay.textContent = dateDisplayPc.textContent;
+                            if(formTimeDisplay) formTimeDisplay.textContent = selectedTime;
+                        }
                         if(formSection) {
                             formSection.style.display = 'block';
                         } else {
@@ -277,8 +303,17 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         if(selectedDateInput) selectedDateInput.value = dateString;
                         if(selectedTimeInput) selectedTimeInput.value = selectedTime;
-                        if(formDateDisplay) formDateDisplay.textContent = dateDisplay.textContent;
-                        if(formTimeDisplay) formTimeDisplay.textContent = selectedTime;
+                        
+                        // 編集モードの場合は変更前と変更後を表示
+                        if ((window as any).editingReservation && formDateDisplay && formTimeDisplay) {
+                            const oldDateDisplay = formatDateForDisplay((window as any).editingReservation.date);
+                            const oldTimeDisplay = (window as any).editingReservation.time;
+                            formDateDisplay.textContent = `${oldDateDisplay} → ${dateDisplay.textContent}`;
+                            formTimeDisplay.textContent = `${oldTimeDisplay} → ${selectedTime}`;
+                        } else {
+                            if(formDateDisplay) formDateDisplay.textContent = dateDisplay.textContent;
+                            if(formTimeDisplay) formTimeDisplay.textContent = selectedTime;
+                        }
                         if(formSection) formSection.style.display = 'block';
                     }
                 }

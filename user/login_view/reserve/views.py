@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from django.utils.formats import time_format
 from django.views.generic import(
     TemplateView,View, 
@@ -43,6 +44,81 @@ class APIReserveCreateView(View):
                 reservation.user = request.user
                 reservation.save()
                 return JsonResponse({'success': True, 'message': '予約が作成されました'}, status=200)
+            else:
+                errors = form.errors.as_json()
+                return JsonResponse({'success': False, 'error': 'バリデーションエラー', 'errors': errors}, status=400)
+                
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': '無効なJSONデータです'}, status=400)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+# ******************************** #
+#        予約更新API（非同期）            
+# ******************************** #
+class APIReserveUpdateView(View):
+    @method_decorator(login_required)
+    def post(self, request, *args, **kwargs):
+        try:
+            # JSONデータを取得
+            data = json.loads(request.body)
+            old_date = data.get('old_date')
+            old_time = data.get('old_time')
+            new_date = data.get('new_date')
+            new_time = data.get('new_time')
+            
+            print("=== APIReserveUpdateView デバッグ ===")
+            print(f"old_date: {old_date}, old_time: {old_time}")
+            print(f"new_date: {new_date}, new_time: {new_time}")
+            print(f"request.body: {request.body}")
+            
+            if not old_date or not old_time or not new_date or not new_time:
+                print("エラー: 日付と時間が必須です")
+                return JsonResponse({'success': False, 'error': '日付と時間が必須です'}, status=400)
+            
+            # 既存の予約を取得（文字列をDate/Timeオブジェクトに変換）
+            try:
+                old_date_obj = datetime.strptime(old_date, '%Y-%m-%d').date()
+                old_time_obj = datetime.strptime(old_time, '%H:%M').time()
+                print(f"変換後: old_date_obj={old_date_obj}, old_time_obj={old_time_obj}")
+                reservation = Reservation.objects.get(
+                    user=request.user,
+                    date=old_date_obj,
+                    time=old_time_obj
+                )
+                print(f"予約が見つかりました: {reservation}")
+            except Reservation.DoesNotExist:
+                print(f"エラー: 予約が見つかりません (date={old_date_obj}, time={old_time_obj})")
+                return JsonResponse({'success': False, 'error': '予約が見つかりません'}, status=404)
+            except ValueError as e:
+                print(f"エラー: 無効な日付または時間の形式です - {e}")
+                return JsonResponse({'success': False, 'error': '無効な日付または時間の形式です'}, status=400)
+            
+            # 新しい日付・時間でフォームデータを作成
+            form_data = {
+                'date': new_date,
+                'time': new_time,
+            }
+            
+            form = ReservationForm(form_data)
+            if form.is_valid():
+                # 既存の予約を削除
+                reservation.delete()
+                
+                # 新しい予約を作成
+                new_reservation = form.save(commit=False)
+                new_reservation.user = request.user
+                new_reservation.save()
+                
+                return JsonResponse({
+                    'success': True, 
+                    'message': '予約が更新されました',
+                    'old_date': old_date,
+                    'old_time': old_time,
+                    'new_date': new_date,
+                    'new_time': new_time
+                }, status=200)
             else:
                 errors = form.errors.as_json()
                 return JsonResponse({'success': False, 'error': 'バリデーションエラー', 'errors': errors}, status=400)

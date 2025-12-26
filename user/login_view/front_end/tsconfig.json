@@ -12,7 +12,8 @@
   },
   "files": [
     "typescript/reserve_async.ts",
-    "typescript/detail.ts"
+    "typescript/detail.ts",
+    "typescript/calendar_sub.ts"
   ]
 }
 

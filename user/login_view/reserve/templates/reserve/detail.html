@@ -3,13 +3,15 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'reserve/css/calendar.css' %}">
 <link rel="stylesheet" href="{% static 'reserve/css/detail.css' %}">
+<script src="{% static 'reserve/js/calendar_sub.js' %}"></script>
+
 {% endblock %}
 {% block content %}
 <h3>予約一覧画面</h3>
 <div class="reserve-container">
     <ul>
         {% for date, date_data in reserved_times_by_date.items%}
-        <div class="list-box-container" id="{{ date_data.date_iso }}-box">
+        <div class="list-box-container" id="{{ date_data.date_iso }}-box" data-date="{{ date_data.date_iso }}">
         <h4>{{ date }}</h4>
             {% for time_data in date_data.times %}
                 <li>
@@ -21,6 +23,7 @@
                 </li>
             {% endfor %}
             </div>
+            <script>checkPastReservation('{{ date_data.date_iso }}-box');</script>
         {% endfor %}
     </ul>
     {% include 'reserve/include/calendar.html' %}
@@ -86,4 +89,5 @@
 </script>
 
 <script src="{% static 'reserve/js/detail.js' %}"></script>
+<script src="{% static 'reserve/js/reserve_async.js' %}"></script>
 {% endblock %}
