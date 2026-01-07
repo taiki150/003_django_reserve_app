@@ -1,12 +1,10 @@
 import json
 from datetime import datetime
-from django.utils.formats import time_format
 from django.views.generic import(
     TemplateView,View, 
 )
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect
 from django.http import JsonResponse
 from .forms import ReservationForm
 from .models import (Reservation)
@@ -122,6 +120,51 @@ class APIReserveUpdateView(View):
             else:
                 errors = form.errors.as_json()
                 return JsonResponse({'success': False, 'error': 'バリデーションエラー', 'errors': errors}, status=400)
+                
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': '無効なJSONデータです'}, status=400)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+# ******************************** #
+#        予約削除API（非同期）            
+# ******************************** #
+class APIReserveDeleteView(View):
+    @method_decorator(login_required)
+    def post(self, request, *args, **kwargs):
+        try:
+            # JSONデータを取得
+            data = json.loads(request.body)
+            date = data.get('date')
+            time = data.get('time')
+            
+            if not date or not time:
+                return JsonResponse({'success': False, 'error': '日付と時間が必須です'}, status=400)
+            
+            # 日付と時間をDate/Timeオブジェクトに変換
+            try:
+                date_obj = datetime.strptime(date, '%Y-%m-%d').date()
+                time_obj = datetime.strptime(time, '%H:%M').time()
+                reservation = Reservation.objects.get(
+                    user=request.user,
+                    date=date_obj,
+                    time=time_obj
+                )
+            except Reservation.DoesNotExist:
+                return JsonResponse({'success': False, 'error': '予約が見つかりません'}, status=404)
+            except ValueError as e:
+                return JsonResponse({'success': False, 'error': '無効な日付または時間の形式です'}, status=400)
+            
+            # 予約を削除
+            reservation.delete()
+            
+            return JsonResponse({
+                'success': True, 
+                'message': '予約が削除されました',
+                'date': date,
+                'time': time
+            }, status=200)
                 
         except json.JSONDecodeError:
             return JsonResponse({'success': False, 'error': '無効なJSONデータです'}, status=400)

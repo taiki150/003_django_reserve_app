@@ -58,6 +58,35 @@ const updateReservation = async (oldDate: string, oldTime: string, newDate: stri
     });
     
     return response;
+}
+
+// 予約削除の非同期処理
+const deleteReservation = async (date: string, time: string) => {
+    const csrfToken = (document.querySelector('[name=csrfmiddlewaretoken]') as HTMLInputElement)?.value;
+    
+    if (!csrfToken) {
+        throw new Error('CSRFトークンが見つかりません');
+    }
+    
+    if (!date || !time) {
+        throw new Error('日付または時間が選択されていません');
+    }
+    
+    const requestBody = {
+        date: date,
+        time: time,
+    };
+    
+    const response = await fetch('/reserve/api/reservation/delete/',{
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+        },
+        body: JSON.stringify(requestBody),
+    });
+    
+    return response;
 } 
 
 
@@ -87,6 +116,57 @@ const updateDisplay = (dateStr: string, timeStr: string): void => {
     }
 };
 
+// 予約表示を更新（削除用：予約を表示から削除）
+const updateDisplayForDelete = (dateStr: string, timeStr: string): void => {
+    // 予約済みデータから削除
+    if (window.reservedTimesByDate && window.reservedTimesByDate[dateStr]) {
+        const index = window.reservedTimesByDate[dateStr].indexOf(timeStr);
+        if (index > -1) {
+            window.reservedTimesByDate[dateStr].splice(index, 1);
+        }
+        // その日付に予約がなくなった場合、日付リストからも削除
+        if (window.reservedTimesByDate[dateStr].length === 0) {
+            delete window.reservedTimesByDate[dateStr];
+            const dateIndex = window.reservedDates?.indexOf(dateStr);
+            if (dateIndex !== undefined && dateIndex > -1) {
+                window.reservedDates?.splice(dateIndex, 1);
+            }
+            document.querySelector(`.calendar-day[data-date="${dateStr}"]`)?.classList.remove('reserved-date');
+        }
+    }
+    
+    // 時間ボタンから予約済みバッジを削除
+    document.querySelectorAll('.time-btn').forEach((btn: Element) => {
+        if (btn.getAttribute('data-time') === timeStr) {
+            const badge = btn.querySelector('.reserved-badge');
+            if (badge) badge.remove();
+            (btn as HTMLButtonElement).disabled = false;
+            btn.classList.remove('reserved-time');
+        }
+    });
+    
+    // リストから該当項目を削除
+    const timeId = timeStr.replace(':', '-'); // "10:00" → "10-00"
+    const deleteBtnId = `${dateStr}-${timeId}-delete-btn`;
+    const deleteBtn = document.querySelector(`[id="${deleteBtnId}"]`);
+    
+    if (deleteBtn) {
+        const listItem = deleteBtn.closest('li');
+        if (listItem) {
+            const listBoxContainer = listItem.closest('.list-box-container');
+            listItem.remove();
+            
+            // その日付の予約が全てなくなった場合、日付コンテナも削除
+            if (listBoxContainer) {
+                const remainingItems = listBoxContainer.querySelectorAll('li');
+                if (remainingItems.length === 0) {
+                    listBoxContainer.remove();
+                }
+            }
+        }
+    }
+};
+
 // 予約表示を更新（更新用：古い予約を削除し、新しい予約を追加）
 const updateDisplayForEdit = (oldDateStr: string, oldTimeStr: string, newDateStr: string, newTimeStr: string): void => {
     // 古い予約を表示から削除
@@ -106,15 +186,26 @@ const updateDisplayForEdit = (oldDateStr: string, oldTimeStr: string, newDateStr
         }
     }
     
-    // 古い予約の時間ボタンから予約済みバッジを削除
+    // 古い予約の時間ボタンから予約済みバッジと編集マークを削除
     document.querySelectorAll('.time-btn').forEach((btn: Element) => {
         if (btn.getAttribute('data-time') === oldTimeStr) {
             const badge = btn.querySelector('.reserved-badge');
             if (badge) badge.remove();
+            btn.classList.remove('reserved-time', 'editing-time', 'selected');
             (btn as HTMLButtonElement).disabled = false;
-            btn.classList.remove('reserved-time');
         }
     });
+    
+    // 同じ日付内で時間を変更した場合、時間ボタンの状態を更新
+    if (oldDateStr === newDateStr && (window as any).updateTimeButtons) {
+        const selectedDay = document.querySelector('.calendar-day.selected') as HTMLElement | null;
+        if (selectedDay) {
+            const year = parseInt(selectedDay.getAttribute('data-year') || '0');
+            const month = parseInt(selectedDay.getAttribute('data-month') || '0');
+            const day = parseInt(selectedDay.getAttribute('data-day') || '0');
+            (window as any).updateTimeButtons({ year: year, month: month, day: day });
+        }
+    }
     
     // 新しい予約を表示に追加
     updateDisplayForNewReservation(newDateStr, newTimeStr, oldDateStr);
@@ -167,9 +258,14 @@ const updateDisplayForNewReservation = (newDateStr: string, newTimeStr: string, 
     setTimeout(() => {
         document.querySelectorAll('.time-btn').forEach((btn: Element) => {
             const timeStr = btn.getAttribute('data-time');
-            if (timeStr === newTimeStr && !btn.querySelector('.reserved-badge')) {
+            if (timeStr === newTimeStr) {
+                // 既存のバッジを削除してから追加（重複を防ぐ）
+                const existingBadge = btn.querySelector('.reserved-badge');
+                if (existingBadge) existingBadge.remove();
+                
                 (btn as HTMLButtonElement).disabled = true;
                 btn.classList.add('reserved-time');
+                btn.classList.remove('editing-time'); // 編集マークを削除
                 const span = document.createElement('span');
                 span.className = 'reserved-badge';
                 span.textContent = '予約済';
@@ -205,20 +301,24 @@ const MyAsync = async (actionName: string, task: () => Promise<Response>, dateSt
                         responseData.new_date,
                         responseData.new_time
                     );
+                    // window.editingReservationを新しい値に更新
+                    window.editingReservation = {
+                        date: responseData.new_date,
+                        time: responseData.new_time
+                    };
+                }
+            } else if (actionName === '予約削除') {
+                // 予約削除の場合はレスポンスから日付・時間を取得
+                if (responseData.date && responseData.time) {
+                    updateDisplayForDelete(responseData.date, responseData.time);
                 }
             }
             alert(`${actionName}に成功しました！`);
         } else {
-            // エラーレスポンスの詳細を取得
-            console.error("-------------------------------- サーバーエラーです --------------------------------");
-            console.error("ステータス:", response.status);
-            console.error("エラー内容:", responseData);
             alert(`${actionName}に失敗しました: ${responseData.error || 'サーバーエラーが発生しました'}`);
         }
         
     }catch(error){
-        console.error("-------------------------------- 失敗です --------------------------------");
-        console.error(error);
         alert(`${actionName}に失敗しました: ${error instanceof Error ? error.message : '予期しないエラーが発生しました'}`);
     }
 }
@@ -304,3 +404,11 @@ document.addEventListener('click', async (e) => {
         }
     }
 });
+
+// グローバルに公開
+(window as any).deleteReservation = deleteReservation;
+(window as any).MyAsync = MyAsync;
+
+// グローバルに公開
+(window as any).deleteReservation = deleteReservation;
+(window as any).MyAsync = MyAsync;

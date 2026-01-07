@@ -7,14 +7,15 @@ interface Window {
     updateTimeButtons?: (selectedDate: {year: number, month: number, day: number}) => void;
 }
 
+// グローバル変数
+const todayDate: Date = new Date();
+todayDate.setHours(0, 0, 0, 0);
+
 // DOMContentLoadedで実行
 document.addEventListener('DOMContentLoaded', () => {
     const calendarBox: HTMLElement | null = document.querySelector('.calendar-wrapper');
     const calendarOverlay: HTMLElement | null = document.querySelector('.calendar-overlay');
     const closeBtn: HTMLElement | null = document.getElementById('calendar-close-btn');
-    
-    const today: Date = new Date();
-    today.setHours(0, 0, 0, 0);
     
     // 編集ボタン：PC版・SP版両方でカレンダーを表示
     document.querySelectorAll('[id$="-edit-btn"]').forEach(btn => {
@@ -55,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // カレンダーを開き、編集対象の日付を初期選択状態にする
                 openCalendar(oldDate, oldTime);
             } catch (error) {
-                console.error('編集処理でエラーが発生しました:', error);
+                alert('編集処理でエラーが発生しました');
             }
         });
     });
@@ -72,10 +73,12 @@ document.addEventListener('DOMContentLoaded', () => {
             currentSelectedReservation = null; // 選択状態をリセット
         }
         
-        // 編集対象の時間ボタンのマークを解除
-        document.querySelectorAll('.time-btn.editing-time').forEach((btn: Element) => {
-            btn.classList.remove('editing-time');
+        // 全ての時間ボタンの状態をリセット
+        document.querySelectorAll('.time-btn').forEach((btn: Element) => {
+            btn.classList.remove('editing-time', 'selected', 'reserved-time', 'past-time');
             (btn as HTMLButtonElement).disabled = false;
+            const badge = btn.querySelector('.reserved-badge');
+            if (badge) badge.remove();
         });
         
         // 編集モードをリセット
@@ -83,6 +86,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.editingReservation) {
             window.editingReservation = null;
         }
+        
+        // 選択されている日付を解除
+        document.querySelectorAll('.calendar-day.selected').forEach((el: Element) => el.classList.remove('selected'));
         
         if(calendarBox){
             // activeクラスを削除して幅を0に戻すアニメーションを開始
@@ -160,23 +166,26 @@ document.addEventListener('DOMContentLoaded', () => {
                         
                         // 初期日付が指定されていれば、その日付を選択状態にする
                         if (initialDate) {
-                            const [year, month, day] = initialDate.split('-').map(Number);
+                            const dateParts = initialDate.split('-');
+                            const [year, month, day] = dateParts.map(Number);
                             
-                            // 日付要素が見つかるまで再試行する関数
-                            const trySelectDate = (retries: number = 5): void => {
-                                const dayElement = document.querySelector(`.calendar-day[data-date="${initialDate}"]`) as HTMLElement;
-                                if (dayElement) {
-                                    // 既存の選択を解除
-                                    document.querySelectorAll('.calendar-day.selected').forEach((el: Element) => el.classList.remove('selected'));
-                                    // 該当日付を選択状態にする
-                                    dayElement.classList.add('selected');
-                                    // 時間パネルを表示
-                                    showTimeSelectionPanel({ year: year, month: month, day: day });
-                                    
-                                    // 初期時間が指定されていれば、その時間を非アクティブ状態（編集対象）にする
-                                    if (initialTime) {
-                                        // 時間ボタンのdata-time属性は"11:00"形式なので、そのまま使用
-                                        setTimeout(() => {
+                            // initCalendarDaysが完了してから日付を選択する（DOM更新を待つ）
+                            setTimeout(() => {
+                                // 日付要素が見つかるまで再試行する関数
+                                const trySelectDate = (retries: number = 5): void => {
+                                    const dayElement = document.querySelector(`.calendar-day[data-date="${initialDate}"]`) as HTMLElement;
+                                    if (dayElement) {
+                                        // 既存の選択を解除
+                                        document.querySelectorAll('.calendar-day.selected').forEach((el: Element) => el.classList.remove('selected'));
+                                        // 該当日付を選択状態にする
+                                        dayElement.classList.add('selected');
+                                        // 時間パネルを表示（updateTimeButtonsが呼ばれる）
+                                        showTimeSelectionPanel({ year: year, month: month, day: day });
+                                        
+                                        // 初期時間が指定されていれば、その時間を非アクティブ状態（編集対象）にする
+                                        if (initialTime) {
+                                            // updateTimeButtonsが実行された後に編集対象の時間を設定
+                                            setTimeout(() => {
                                             const timeBtn = document.querySelector(`.time-btn[data-time="${initialTime}"]`) as HTMLButtonElement;
                                             if (timeBtn) {
                                                 // 既存の選択を解除
@@ -213,16 +222,17 @@ document.addEventListener('DOMContentLoaded', () => {
                                                     }
                                                 }
                                             }
-                                        }, 200); // 時間パネルの表示を待つ
+                                        }, 300); // updateTimeButtonsの実行を待つ
                                     }
                                 } else if (retries > 0) {
                                     // 要素が見つからない場合は、少し待ってから再試行
                                     setTimeout(() => trySelectDate(retries - 1), 50);
                                 }
-                            };
-                            
-                            // 初回試行
-                            trySelectDate();
+                                };
+                                
+                                // 初回試行
+                                trySelectDate();
+                            }, 100); // initCalendarDaysの完了を待つ
                         }
                     }
                 });
@@ -263,6 +273,9 @@ document.addEventListener('DOMContentLoaded', () => {
         closeBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             closeCalendar();
+            document.querySelectorAll('.list-box-container').forEach(display => {
+                display.classList.remove('selected');
+            });
         });
     }
 
@@ -273,25 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // 親Boxの選択状態を管理する関数
-    function highlightParentBox(button: Element): void {
-        // すべてのBoxから選択状態を解除
-        document.querySelectorAll('.list-box-container').forEach((box: Element) => {
-            box.classList.remove('selected');
-        });
-        
-        // ボタンのidから日付部分を抽出（例: "2025-12-14-10-00-delete-btn" → "2025-12-14"）
-        const buttonId = button.id;
-        const dateMatch = buttonId.match(/^(\d{4}-\d{2}-\d{2})-/);
-        
-        if (dateMatch) {
-            const dateIso = dateMatch[1];
-            const parentBox = document.getElementById(`${dateIso}-box`);
-            if (parentBox) {
-                parentBox.classList.add('selected');
-            }
-        }
-    }
+
     
     // 現在選択されている予約を追跡（日付-時間の形式、例: "2025-12-14-10-00"）
     let currentSelectedReservation: string | null = null;
@@ -299,46 +294,40 @@ document.addEventListener('DOMContentLoaded', () => {
     // 編集モードの状態管理（編集対象の元の予約情報）
     let editingReservation: { date: string, time: string } | null = null;
     
-    // ボタンを無効化する関数
-    function disableButton(button: Element): void {
-        const htmlButton = button as HTMLButtonElement;
-        htmlButton.disabled = true;
-        htmlButton.classList.add('processing');
-    }
     
-    // ボタンを有効化する関数
-    function enableButton(button: Element): void {
-        const htmlButton = button as HTMLButtonElement;
-        htmlButton.disabled = false;
-        htmlButton.classList.remove('processing');
-    }
-    
-    // ボタンのidから予約識別子を抽出（例: "2025-12-14-10-00-delete-btn" → "2025-12-14-10-00"）
-    function getReservationIdFromButton(buttonId: string): string | null {
-        const match = buttonId.match(/^(\d{4}-\d{2}-\d{2}-\d{2}-\d{2})-/);
-        return match ? match[1] : null;
-    }
-    
-    // 特定の予約に対応する編集ボタンのみを無効化（削除ボタンは無効化しない）
-    function disableReservationButtons(reservationId: string): void {
-        const editBtn = document.getElementById(`${reservationId}-edit-btn`);
-        if (editBtn) disableButton(editBtn);
-    }
-    
-    // 特定の予約に対応する編集ボタンのみを有効化（削除ボタンは常に有効）
-    function enableReservationButtons(reservationId: string): void {
-        const editBtn = document.getElementById(`${reservationId}-edit-btn`);
-        if (editBtn) enableButton(editBtn);
-    }
     
     // 削除ボタンのイベントリスナー（動的に生成されるボタンに対応）
     document.querySelectorAll('[id$="-delete-btn"]').forEach(btn => {
         btn.addEventListener('click', async () => {
+            
             highlightParentBox(btn);
             
             // ボタンのidから予約識別子を取得
             const reservationId = getReservationIdFromButton(btn.id);
-            if (!reservationId) return;
+            
+            if (!reservationId) {
+                return;
+            }
+            
+            // 予約識別子から日付と時間を抽出（例: "2025-12-14-10-00" → date: "2025-12-14", time: "10:00"）
+            const parts = reservationId.split('-');
+            const date = `${parts[0]}-${parts[1]}-${parts[2]}`;
+            const time = `${parts[3]}:${parts[4]}`;
+            
+            
+            // 確認ダイアログを表示
+            const dateDisplay = date.replace(/(\d{4})-(\d{2})-(\d{2})/, '$1年$2月$3日');
+            const timeDisplay = time.replace(/(\d{2}):(\d{2})/, '$1時');
+            const confirmMessage = `${dateDisplay}${timeDisplay}の予約を削除してもよろしいですか？`;
+            
+            if (!confirm(confirmMessage)) {
+                // キャンセルされた場合は、選択状態を解除
+                document.querySelectorAll('.list-box-container').forEach((box: Element) => {
+                    box.classList.remove('selected');
+                });
+                return; // 処理を中断
+            }
+            
             
             // 以前に選択されていた予約の編集ボタンを有効化
             if (currentSelectedReservation && currentSelectedReservation !== reservationId) {
@@ -350,10 +339,24 @@ document.addEventListener('DOMContentLoaded', () => {
             disableReservationButtons(reservationId);
             
             try {
-                // ここに削除処理を実装
-                // 例: await deleteReservation(...);
+                // 削除処理を実行
+                const deleteReservationFunc = (window as any).deleteReservation;
+                const MyAsyncFunc = (window as any).MyAsync;
+                
+                
+                if (!deleteReservationFunc || !MyAsyncFunc) {
+                    alert('削除機能が利用できません。ページを再読み込みしてください。');
+                    return;
+                }
+                
+                await MyAsyncFunc('予約削除', () => deleteReservationFunc(date, time));
+                
+                // 削除後、カレンダーが開いている場合は閉じる
+                if (calendarBox && calendarBox.classList.contains('active')) {
+                    closeCalendar();
+                }
             } catch (error) {
-                console.error('削除処理でエラーが発生しました:', error);
+                alert('削除処理でエラーが発生しました');
             }
         });
     });
@@ -494,183 +497,283 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-/**************************************************
- * 
- * ▽▽▽▽▽▽▽▽▽▽▽▽ サブ関数はここより下 ▽▽▽▽▽▽▽▽▽▽▽▽
- * 
- **************************************************/
+                            /**************************************************
+                             * 
+                             * ▽▽▽▽▽▽▽▽▽▽▽▽ サブ関数はここより下 ▽▽▽▽▽▽▽▽▽▽▽▽
+                             * 
+                             **************************************************/
 
-// 日付を表示形式に変換する関数（YYYY-MM-DD → YYYY年MM月DD日）
-function formatDateForDisplay(dateStr: string): string {
-    const [year, month, day] = dateStr.split('-').map(Number);
-    return `${year}年${month}月${day}日`;
-}
+                            // 日付を表示形式に変換する関数（YYYY-MM-DD → YYYY年MM月DD日）
+                            function formatDateForDisplay(dateStr: string): string {
+                                const [year, month, day] = dateStr.split('-').map(Number);
+                                return `${year}年${month}月${day}日`;
+                            }
 
-// 1_カレンダーの日付を初期化
-function initCalendarDays(): void {
-    const currentYear: number = today.getFullYear();
-    const currentMonth: number = today.getMonth();
-    const reservedDates: string[] = window.reservedDates || [];
-    const calendarDays: NodeListOf<HTMLElement> = document.querySelectorAll('#calendar-days .calendar-day[data-date]');
+                            // ボタンの無効化関数
+                            function disableButton(button: Element): void {
+                                const htmlButton = button as HTMLButtonElement;
+                                htmlButton.disabled = true;
+                                htmlButton.classList.add('processing');
+                            }
 
-    calendarDays.forEach((dayEl: HTMLElement) => {
-        const day: number = parseInt(dayEl.getAttribute('data-date')!);
-        const dayDate: Date = new Date(currentYear, currentMonth, day);
-        dayDate.setHours(0, 0, 0, 0);
-        const dateStr = `${String(currentYear)}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        
-        if (dayDate.getTime() === today.getTime()) dayEl.classList.add('today');
-        if (reservedDates.includes(dateStr)) dayEl.classList.add('reserved-date');
-        if (dayDate < today) {
-            dayEl.classList.add('past-date');
-            dayEl.classList.remove('reserved-date');
-        }
-        
-        dayEl.setAttribute('data-year', String(currentYear));
-        dayEl.setAttribute('data-month', String(currentMonth + 1));
-        dayEl.setAttribute('data-day', String(day));
-        dayEl.setAttribute('data-date', dateStr);
-        
-        dayEl.addEventListener('click', function(this: Element) {
-            if (this.classList.contains('past-date')) return;
-            document.querySelectorAll('.calendar-day.selected').forEach((el: Element) => el.classList.remove('selected'));
-            this.classList.add('selected');
-            showTimeSelectionPanel({
-                year: parseInt(this.getAttribute('data-year')!),
-                month: parseInt(this.getAttribute('data-month')!),
-                day: parseInt(this.getAttribute('data-day')!)
-            });
-        });
-    });
-}
+                            // ボタンの有効化関数
+                            function enableButton(button: Element): void {
+                                const htmlButton = button as HTMLButtonElement;
+                                htmlButton.disabled = false;
+                                htmlButton.classList.remove('processing');
+                            }
 
-// 2_時間パネルの表示関数（グローバルに公開）
-function showTimeSelectionPanel(date: {year: number, month: number, day: number}): void {
-    const dateString: string = `${date.year}年${date.month}月${date.day}日`;
-    const dateStr: string = `${date.year}-${String(date.month).padStart(2, '0')}-${String(date.day).padStart(2, '0')}`;
-    
-    // 編集対象の日付かどうかをチェック
-    const isEditingDate = window.editingReservation && window.editingReservation.date === dateStr;
-    
-    // 日付が変更された場合、編集対象の時間ボタンのマークを解除
-    if (!isEditingDate) {
-        document.querySelectorAll('.time-btn.editing-time').forEach((btn: Element) => {
-            btn.classList.remove('editing-time');
-            (btn as HTMLButtonElement).disabled = false;
-        });
-    }
-    
-    updateTimeButtons(date);
-    
-    // 編集対象の日付の場合、編集対象の時間ボタンを非アクティブ状態にする
-    if (isEditingDate && window.editingReservation) {
-        setTimeout(() => {
-            const timeBtn = document.querySelector(`.time-btn[data-time="${window.editingReservation!.time}"]`) as HTMLButtonElement;
-            if (timeBtn) {
-                // 既存の編集対象マークを解除
-                document.querySelectorAll('.time-btn.editing-time').forEach((btn: Element) => {
-                    btn.classList.remove('editing-time');
-                    (btn as HTMLButtonElement).disabled = false;
-                });
-                // 該当時間を非アクティブ状態（編集対象）にする
-                timeBtn.classList.add('editing-time');
-                timeBtn.disabled = true;
-                // フォームに値を設定
-                const selectedDateInput = document.querySelector('[name="selected_date"]') as HTMLInputElement;
-                const selectedTimeInput = document.querySelector('[name="selected_time"]') as HTMLInputElement;
-                if (selectedDateInput && selectedTimeInput) {
-                    selectedDateInput.value = dateStr;
-                    selectedTimeInput.value = window.editingReservation!.time;
-                    // フォーム表示を更新（編集モード対応）
-                    const formDateDisplay = document.querySelector('#form-date-display, #form-date-display-pc') as HTMLElement;
-                    const formTimeDisplay = document.querySelector('#form-time-display, #form-time-display-pc') as HTMLElement;
-                    if (formDateDisplay && formTimeDisplay) {
-                        const oldDateDisplay = formatDateForDisplay(window.editingReservation!.date);
-                        const oldTimeDisplay = window.editingReservation!.time;
-                        formDateDisplay.textContent = `${oldDateDisplay} → ${dateString}`;
-                        formTimeDisplay.textContent = `${oldTimeDisplay} → ${window.editingReservation!.time}`;
-                    }
-                }
-            }
-        }, 100);
-    }
-    
-    if (window.innerWidth >= 769) {
-        // PC版で予約詳細パネルを表示
-        const detailPanel = document.querySelector('.reserve-detail-panel-detail') as HTMLElement | null;
-        if(detailPanel){
-            detailPanel.classList.add('active');
-        }
-        const selectedDatePc: HTMLElement | null = document.getElementById('selected-date-display-pc');
-        if(selectedDatePc) selectedDatePc.textContent = dateString;
-        const formSectionPc: HTMLElement | null = document.getElementById('reserve-form-section-detail-pc');
-        if(formSectionPc) formSectionPc.style.display = "none";
-    } else {
-        // SP版の場合：日付をクリックしたら時間パネルを表示
-        const panel: HTMLElement | null = document.getElementById('time-selection-panel');
-        const overlay: HTMLElement | null = document.getElementById('modal-overlay');
-        const selectedDate: HTMLElement | null = document.getElementById('selected-date-display');
-        const formSection: HTMLElement | null = document.getElementById('reserve-form-section');
-        
-        // 日付の挿入
-        if(selectedDate) selectedDate.textContent = dateString;
-        
-        // 背景暗く・時間パネルの表示・スクロール禁止・予約フォームの非表示
-        if(overlay) overlay.classList.add('active');
-        if(panel) panel.classList.add('active');
-        if(formSection) formSection.style.display = "none";
-        document.body.style.overflow = 'hidden';
-    }
-}
+                            // 予約識別子の抽出関数
+                            // （例: "2025-12-14-10-00-delete-btn" → "2025-12-14-10-00"）
+                            function getReservationIdFromButton(buttonId: string): string | null {
+                                const match = buttonId.match(/^(\d{4}-\d{2}-\d{2}-\d{2}-\d{2})-/);
+                                return match ? match[1] : null;
+                            }
 
-// 3_時間ボタンの有効/無効を更新（グローバルに公開）
-function updateTimeButtons(selectedDate: {year: number, month: number, day: number}): void {
-    const timeButtons: NodeListOf<HTMLButtonElement> = document.querySelectorAll('.time-btn');
-    const selectedDateObj: Date = new Date(selectedDate.year, selectedDate.month - 1, selectedDate.day);
-    selectedDateObj.setHours(0, 0, 0, 0);
-    const dateStr: string = `${selectedDate.year}-${String(selectedDate.month).padStart(2, '0')}-${String(selectedDate.day).padStart(2, '0')}`;
-    let reservedTimes: string[] = window.reservedTimesByDate?.[dateStr] || [];
-    
-    // 編集モードの場合、編集対象の予約の時間を除外（編集可能にするため）
-    if (window.editingReservation && window.editingReservation.date === dateStr) {
-        reservedTimes = reservedTimes.filter(time => time !== window.editingReservation!.time);
-    }
-    const isToday: boolean = selectedDateObj.getTime() === today.getTime();
-    const now: Date = new Date();
-    const currentHour: number = now.getHours();
-    const currentMinute: number = now.getMinutes();
-    
-    timeButtons.forEach((btn) => {
-        btn.classList.remove('selected');
-        const timeStr: string | null = btn.getAttribute('data-time');
-        if (!timeStr) return;
-        const isReserved: boolean = reservedTimes.includes(timeStr);
-        const existingReservedSpan: Element | null = btn.querySelector('.reserved-badge');
-        if (existingReservedSpan) existingReservedSpan.remove();
-        
-        if (isReserved) {
-            btn.classList.add('reserved-time');
-            btn.disabled = true;
-            const reservedSpan = document.createElement('span');
-            reservedSpan.className = 'reserved-badge';
-            reservedSpan.textContent = '予約済';
-            btn.appendChild(reservedSpan);
-            return;
-        }
-        
-        btn.classList.remove('reserved-time');
-        if (isToday) {
-            const [hour, minute] = timeStr.split(':').map(Number);
-            if (hour < currentHour || (hour === currentHour && minute <= currentMinute)) {
-                btn.classList.add('past-time');
-                btn.disabled = true;
-            } else {
-                btn.classList.remove('past-time');
-                btn.disabled = false;
-            }
-        } else {
-            btn.classList.remove('past-time');
-            btn.disabled = false;
-        }
-    });
-}
+                            // 特定の予約に対応する編集ボタンのみを無効化（削除ボタンは無効化しない）
+                            function disableReservationButtons(reservationId: string): void {
+                                const editBtn = document.getElementById(`${reservationId}-edit-btn`);
+                                if (editBtn) disableButton(editBtn);
+                            }
+
+                            // 特定の予約に対応する編集ボタンのみを有効化（削除ボタンは常に有効）
+                            function enableReservationButtons(reservationId: string): void {
+                                const editBtn = document.getElementById(`${reservationId}-edit-btn`);
+                                if (editBtn) enableButton(editBtn);
+                            }
+
+                            /**************************************************
+                             * 
+                             * ▽▽▽▽▽▽▽▽▽▽▽▽ サブ関数はここより下 ▽▽▽▽▽▽▽▽▽▽▽▽
+                             * 
+                             **************************************************/
+
+                            // 1_カレンダーの日付を初期化
+                            let calendarDaysInitialized = false;
+                            
+                            function initCalendarDays(): void {
+                                const currentYear: number = todayDate.getFullYear();
+                                const currentMonth: number = todayDate.getMonth();
+                                const reservedDates: string[] = window.reservedDates || [];
+                                const calendarDays: NodeListOf<HTMLElement> = document.querySelectorAll('#calendar-days .calendar-day[data-date]');
+
+                                // イベント委譲を一度だけ設定
+                                if (!calendarDaysInitialized) {
+                                    const calendarDaysContainer = document.getElementById('calendar-days');
+                                    if (calendarDaysContainer) {
+                                        calendarDaysContainer.addEventListener('click', (e) => {
+                                            const target = e.target as HTMLElement;
+                                            const dayEl = target.closest('.calendar-day') as HTMLElement;
+                                            if (!dayEl || dayEl.classList.contains('past-date')) return;
+                                            
+                                            document.querySelectorAll('.calendar-day.selected').forEach((el: Element) => el.classList.remove('selected'));
+                                            dayEl.classList.add('selected');
+                                            const dataYear = dayEl.getAttribute('data-year');
+                                            const dataMonth = dayEl.getAttribute('data-month');
+                                            const dataDay = dayEl.getAttribute('data-day');
+                                            showTimeSelectionPanel({
+                                                year: parseInt(dataYear!),
+                                                month: parseInt(dataMonth!),
+                                                day: parseInt(dataDay!)
+                                            });
+                                        });
+                                        calendarDaysInitialized = true;
+                                    }
+                                }
+
+                                // 全ての時間ボタンの状態をリセット
+                                document.querySelectorAll('.time-btn').forEach((btn: Element) => {
+                                    btn.classList.remove('selected', 'reserved-time', 'editing-time', 'past-time');
+                                    (btn as HTMLButtonElement).disabled = false;
+                                    const badge = btn.querySelector('.reserved-badge');
+                                    if (badge) badge.remove();
+                                });
+
+                                calendarDays.forEach((dayEl: HTMLElement) => {
+                                    // data-date属性から日付を取得（既にYYYY-MM-DD形式の場合はそのまま使用、数字のみの場合は日付として解釈）
+                                    const dataDateAttr = dayEl.getAttribute('data-date');
+                                    let day: number;
+                                    let dateStr: string;
+                                    
+                                    if (dataDateAttr && dataDateAttr.includes('-')) {
+                                        // 既にYYYY-MM-DD形式の場合
+                                        const [year, month, dayNum] = dataDateAttr.split('-').map(Number);
+                                        day = dayNum;
+                                        dateStr = dataDateAttr;
+                                    } else {
+                                        // 数字のみの場合（1-31）
+                                        day = parseInt(dataDateAttr || dayEl.textContent?.trim() || '0');
+                                        dateStr = `${String(currentYear)}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                                    }
+                                    
+                                    const dayDate: Date = new Date(currentYear, currentMonth, day);
+                                    dayDate.setHours(0, 0, 0, 0);
+                                    
+                                    // クラスのリセット
+                                    dayEl.classList.remove('today', 'reserved-date', 'past-date', 'selected');
+                                    
+                                    if (dayDate.getTime() === todayDate.getTime()) dayEl.classList.add('today');
+                                    if (reservedDates.includes(dateStr)) dayEl.classList.add('reserved-date');
+                                    if (dayDate < todayDate) {
+                                        dayEl.classList.add('past-date');
+                                        dayEl.classList.remove('reserved-date');
+                                    }
+                                    
+                                    dayEl.setAttribute('data-year', String(currentYear));
+                                    dayEl.setAttribute('data-month', String(currentMonth + 1));
+                                    dayEl.setAttribute('data-day', String(day));
+                                    dayEl.setAttribute('data-date', dateStr);
+                                });
+                            }
+
+                            // 2_時間パネルの表示関数（グローバルに公開）
+                            function showTimeSelectionPanel(date: {year: number, month: number, day: number}): void {
+                                const dateString: string = `${date.year}年${date.month}月${date.day}日`;
+                                const dateStr: string = `${date.year}-${String(date.month).padStart(2, '0')}-${String(date.day).padStart(2, '0')}`;
+                                
+                                // 編集対象の日付かどうかをチェック
+                                const isEditingDate = window.editingReservation && window.editingReservation.date === dateStr;
+                                
+                                // 日付が変更された場合、編集対象の時間ボタンのマークを解除
+                                if (!isEditingDate) {
+                                    document.querySelectorAll('.time-btn.editing-time').forEach((btn: Element) => {
+                                        btn.classList.remove('editing-time');
+                                        (btn as HTMLButtonElement).disabled = false;
+                                    });
+                                }
+                                
+                                updateTimeButtons(date);
+                                
+                                // 編集対象の日付の場合、編集対象の時間ボタンを非アクティブ状態にする
+                                if (isEditingDate && window.editingReservation) {
+                                    setTimeout(() => {
+                                        const timeBtn = document.querySelector(`.time-btn[data-time="${window.editingReservation!.time}"]`) as HTMLButtonElement;
+                                        if (timeBtn) {
+                                            // 既存の編集対象マークを解除
+                                            document.querySelectorAll('.time-btn.editing-time').forEach((btn: Element) => {
+                                                btn.classList.remove('editing-time');
+                                                (btn as HTMLButtonElement).disabled = false;
+                                            });
+                                            // 該当時間を非アクティブ状態（編集対象）にする
+                                            timeBtn.classList.add('editing-time');
+                                            timeBtn.disabled = true;
+                                            // フォームに値を設定
+                                            const selectedDateInput = document.querySelector('[name="selected_date"]') as HTMLInputElement;
+                                            const selectedTimeInput = document.querySelector('[name="selected_time"]') as HTMLInputElement;
+                                            if (selectedDateInput && selectedTimeInput) {
+                                                selectedDateInput.value = dateStr;
+                                                selectedTimeInput.value = window.editingReservation!.time;
+                                                // フォーム表示を更新（編集モード対応）
+                                                const formDateDisplay = document.querySelector('#form-date-display, #form-date-display-pc') as HTMLElement;
+                                                const formTimeDisplay = document.querySelector('#form-time-display, #form-time-display-pc') as HTMLElement;
+                                                if (formDateDisplay && formTimeDisplay) {
+                                                    const oldDateDisplay = formatDateForDisplay(window.editingReservation!.date);
+                                                    const oldTimeDisplay = window.editingReservation!.time;
+                                                    formDateDisplay.textContent = `${oldDateDisplay} → ${dateString}`;
+                                                    formTimeDisplay.textContent = `${oldTimeDisplay} → ${window.editingReservation!.time}`;
+                                                }
+                                            }
+                                        }
+                                    }, 100);
+                                }
+                                
+                                if (window.innerWidth >= 769) {
+                                    // PC版で予約詳細パネルを表示
+                                    const detailPanel = document.querySelector('.reserve-detail-panel-detail') as HTMLElement | null;
+                                    if(detailPanel){
+                                        detailPanel.classList.add('active');
+                                    }
+                                    const selectedDatePc: HTMLElement | null = document.getElementById('selected-date-display-pc');
+                                    if(selectedDatePc) selectedDatePc.textContent = dateString;
+                                    const formSectionPc: HTMLElement | null = document.getElementById('reserve-form-section-detail-pc');
+                                    if(formSectionPc) formSectionPc.style.display = "none";
+                                } else {
+                                    // SP版の場合：日付をクリックしたら時間パネルを表示
+                                    const panel: HTMLElement | null = document.getElementById('time-selection-panel');
+                                    const overlay: HTMLElement | null = document.getElementById('modal-overlay');
+                                    const selectedDate: HTMLElement | null = document.getElementById('selected-date-display');
+                                    const formSection: HTMLElement | null = document.getElementById('reserve-form-section');
+                                    
+                                    // 日付の挿入
+                                    if(selectedDate) selectedDate.textContent = dateString;
+                                    
+                                    // 背景暗く・時間パネルの表示・スクロール禁止・予約フォームの非表示
+                                    if(overlay) overlay.classList.add('active');
+                                    if(panel) panel.classList.add('active');
+                                    if(formSection) formSection.style.display = "none";
+                                    document.body.style.overflow = 'hidden';
+                                }
+                            }
+
+                            // 3_時間ボタンの有効/無効を更新（グローバルに公開）
+                            function updateTimeButtons(selectedDate: {year: number, month: number, day: number}): void {
+                                const timeButtons: NodeListOf<HTMLButtonElement> = document.querySelectorAll('.time-btn');
+                                const selectedDateObj: Date = new Date(selectedDate.year, selectedDate.month - 1, selectedDate.day);
+                                selectedDateObj.setHours(0, 0, 0, 0);
+                                const dateStr: string = `${selectedDate.year}-${String(selectedDate.month).padStart(2, '0')}-${String(selectedDate.day).padStart(2, '0')}`;
+                                let reservedTimes: string[] = window.reservedTimesByDate?.[dateStr] || [];
+                                
+                                // 編集モードの場合、編集対象の予約の時間を除外（編集可能にするため）
+                                if (window.editingReservation && window.editingReservation.date === dateStr) {
+                                    reservedTimes = reservedTimes.filter(time => time !== window.editingReservation!.time);
+                                }
+                                
+                                const isToday: boolean = selectedDateObj.getTime() === todayDate.getTime();
+                                const now: Date = new Date();
+                                const currentHour: number = now.getHours();
+                                const currentMinute: number = now.getMinutes();
+                                
+                                timeButtons.forEach((btn) => {
+                                    btn.classList.remove('selected');
+                                    const timeStr: string | null = btn.getAttribute('data-time');
+                                    if (!timeStr) return;
+                                    const isReserved: boolean = reservedTimes.includes(timeStr);
+                                    const existingReservedSpan: Element | null = btn.querySelector('.reserved-badge');
+                                    if (existingReservedSpan) existingReservedSpan.remove();
+                                    
+                                    if (isReserved) {
+                                        btn.classList.add('reserved-time');
+                                        btn.disabled = true;
+                                        const reservedSpan = document.createElement('span');
+                                        reservedSpan.className = 'reserved-badge';
+                                        reservedSpan.textContent = '予約済';
+                                        btn.appendChild(reservedSpan);
+                                        return;
+                                    }
+                                    
+                                    btn.classList.remove('reserved-time');
+                                    if (isToday) {
+                                        const [hour, minute] = timeStr.split(':').map(Number);
+                                        if (hour < currentHour || (hour === currentHour && minute <= currentMinute)) {
+                                            btn.classList.add('past-time');
+                                            btn.disabled = true;
+                                        } else {
+                                            btn.classList.remove('past-time');
+                                            btn.disabled = false;
+                                        }
+                                    } else {
+                                        btn.classList.remove('past-time');
+                                        btn.disabled = false;
+                                    }
+                                });
+                            }
+
+                                // 親Boxの選択状態を管理する関数
+                                function highlightParentBox(button: Element): void {
+                                    // すべてのBoxから選択状態を解除
+                                    document.querySelectorAll('.list-box-container').forEach((box: Element) => {
+                                        box.classList.remove('selected');
+                                    });
+                                    
+                                    // ボタンのidから日付部分を抽出（例: "2025-12-14-10-00-delete-btn" → "2025-12-14"）
+                                    const buttonId = button.id;
+                                    const dateMatch = buttonId.match(/^(\d{4}-\d{2}-\d{2})-/);
+                                    
+                                    if (dateMatch) {
+                                        const dateIso = dateMatch[1];
+                                        const parentBox = document.getElementById(`${dateIso}-box`);
+                                        if (parentBox) {
+                                            parentBox.classList.add('selected');
+                                        }
+                                    }
+                                }

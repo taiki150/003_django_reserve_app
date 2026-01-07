@@ -1,22 +1,25 @@
 "use strict";
-const today = new Date();
-const year = today.getFullYear();
-const date = today.getDate();
-const month = today.getMonth();
-// 今月の1日を取得 + 曜日の取得
-const firstDate = new Date(year, month, 1);
-const firstDay = firstDate.getDay();
-const header2 = document.getElementById('month-year');
-const calendarDays = document.getElementById('calendar-days');
-// カレンダーの空白調整
-for (let i = 0; i < firstDay; i++) {
-    const emptyDiv = document.createElement('div');
-    emptyDiv.classList.add('calendar-day', 'empty-day', 'past-date');
-    calendarDays === null || calendarDays === void 0 ? void 0 : calendarDays.appendChild(emptyDiv);
-}
-if (header2) {
-    header2.textContent = `${year}年 ${month + 1}月`;
-}
+// IIFEでスコープを分離してtodayForCalendarの重複宣言を防ぐ
+(function () {
+    const todayForCalendar = new Date();
+    const year = todayForCalendar.getFullYear();
+    const date = todayForCalendar.getDate();
+    const month = todayForCalendar.getMonth();
+    // 今月の1日を取得 + 曜日の取得
+    const firstDate = new Date(year, month, 1);
+    const firstDay = firstDate.getDay();
+    const header2 = document.getElementById('month-year');
+    const calendarDays = document.getElementById('calendar-days');
+    // カレンダーの空白調整
+    for (let i = 0; i < firstDay; i++) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.classList.add('calendar-day', 'empty-day', 'past-date');
+        calendarDays === null || calendarDays === void 0 ? void 0 : calendarDays.appendChild(emptyDiv);
+    }
+    if (header2) {
+        header2.textContent = `${year}年 ${month + 1}月`;
+    }
+})();
 // detail.htmlで使用する関数
 // idを元に一致するyy-mm-dd-を取得し、変数に格納(yyyymmdd形式)
 // 以下のコードは不要のため削除（hidePastReservations関数で実装済み）
