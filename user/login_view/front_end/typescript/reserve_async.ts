@@ -58,7 +58,7 @@ const updateReservation = async (oldDate: string, oldTime: string, newDate: stri
     });
     
     return response;
-}
+} 
 
 // 予約削除の非同期処理
 const deleteReservation = async (date: string, time: string) => {

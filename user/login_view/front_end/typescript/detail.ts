@@ -11,6 +11,128 @@ interface Window {
 const todayDate: Date = new Date();
 todayDate.setHours(0, 0, 0, 0);
 
+const currentYear: number = todayDate.getFullYear();
+const currentMonth: number = todayDate.getMonth();
+const currentDay: number = todayDate.getDate();
+
+/***************************************
+ * ▽▽▽ ユーティリティ関数 ▽▽▽
+***************************************/
+
+/**
+ * 年、月、日をYYYY-MM-DD形式の文字列にフォーマットする
+ * @param year - 年
+ * @param month - 月（1-12）
+ * @param day - 日
+ * @returns YYYY-MM-DD形式の文字列
+ */
+function formatDateToDay(year: number, month: number, day: number): string {
+    return `${String(year)}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+/***************************************
+ * ▽▽▽ タブ切り替えの処理 ▽▽▽
+***************************************/
+const today: string = formatDateToDay(currentYear, currentMonth + 1, currentDay);
+
+// 過去1週間の開始日を計算（本日から7日前）
+const oneWeekAgoDate: Date = new Date(todayDate);
+oneWeekAgoDate.setDate(oneWeekAgoDate.getDate() - 7);
+const oneWeekAgo: string = formatDateToDay(
+    oneWeekAgoDate.getFullYear(),
+    oneWeekAgoDate.getMonth() + 1,
+    oneWeekAgoDate.getDate()
+);
+
+/**
+ * 予約リストの表示/非表示を切り替える
+ * @param tabType - 'current'（現在の予約）または 'past'（過去の予約）
+ */
+function switchReservationTab(tabType: 'current' | 'past'): void {
+    const listBoxContainers: NodeListOf<HTMLElement> = document.querySelectorAll('.list-box-container');
+    
+    listBoxContainers.forEach((box) => {
+        const dateDate: string | null = box.getAttribute('data-date');
+        
+        if (!dateDate) {
+            // data-date属性がない場合は非表示
+            box.classList.remove('tab-visible');
+            return;
+        }
+        
+        // 日付を比較（YYYY-MM-DD形式なので文字列比較でOK）
+        const isCurrentDate: boolean = dateDate >= today;
+        // 過去の予約：本日より小さい かつ 1週間以内の予約を表示
+        const isPastDateWithinWeek: boolean = dateDate < today && dateDate >= oneWeekAgo;
+        
+        if (tabType === 'current') {
+            // 現在の予約タブ：本日以降の予約を表示
+            if (isCurrentDate) {
+                box.classList.add('tab-visible');
+                // 現在の予約タブではpast-dateクラスを削除（表示のため）
+                box.classList.remove('past-date');
+                // 編集・削除ボタンを表示
+                const editButtons = box.querySelectorAll('[id$="-edit-btn"]');
+                const deleteButtons = box.querySelectorAll('[id$="-delete-btn"]');
+                editButtons.forEach((btn) => (btn as HTMLElement).style.display = '');
+                deleteButtons.forEach((btn) => (btn as HTMLElement).style.display = '');
+            } else {
+                box.classList.remove('tab-visible');
+            }
+        } else {
+            // 過去の予約タブ：本日より小さい かつ 過去1週間以内の予約を表示
+            if (isPastDateWithinWeek) {
+                box.classList.add('tab-visible');
+                // 過去の予約タブで表示する場合はpast-dateクラスを削除
+                box.classList.remove('past-date');
+                // 編集・削除ボタンを非表示
+                const editButtons = box.querySelectorAll('[id$="-edit-btn"]');
+                const deleteButtons = box.querySelectorAll('[id$="-delete-btn"]');
+                editButtons.forEach((btn) => (btn as HTMLElement).style.display = 'none');
+                deleteButtons.forEach((btn) => (btn as HTMLElement).style.display = 'none');
+            } else {
+                box.classList.remove('tab-visible');
+                // 表示しない過去の予約にはpast-dateクラスを追加（非表示のため）
+                if (dateDate < today) {
+                    box.classList.add('past-date');
+                }
+            }
+        }
+    });
+}
+
+// 初期状態：現在の予約タブを表示
+switchReservationTab('current');
+
+// タブボタンのクリックイベント
+document.querySelectorAll('.tab-button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        // カレンダーが開いている場合は閉じる
+        const closeCalendarFn = (window as any).closeCalendar;
+        if (closeCalendarFn && typeof closeCalendarFn === 'function') {
+            closeCalendarFn();
+        }
+        
+        // タブボタンのactiveクラスを切り替え
+        document.querySelectorAll('.tab-button').forEach((button) => {
+            button.classList.remove('active');
+        });
+        btn.classList.add('active');
+        
+        // 選択されたタブに応じて予約リストを切り替え
+        const tabType = btn.getAttribute('data-tab');
+        if (tabType === 'current' || tabType === 'past') {
+            switchReservationTab(tabType);
+        }
+    });
+});
+
+
+
+/***************************************
+ * ▽▽▽ カレンダー表示に関する処理 ▽▽▽
+***************************************/
+
 // DOMContentLoadedで実行
 document.addEventListener('DOMContentLoaded', () => {
     const calendarBox: HTMLElement | null = document.querySelector('.calendar-wrapper');
@@ -65,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
     (window as any).showTimeSelectionPanel = showTimeSelectionPanel;
     (window as any).updateTimeButtons = updateTimeButtons;
     
-    // カレンダーを閉じる関数
+    // カレンダーを閉じる関数（グローバルに公開）
     function closeCalendar(): void {
         // カレンダーを閉じる際に、選択されている予約の編集ボタンのprocessing状態を解除
         if (currentSelectedReservation) {
@@ -123,6 +245,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // 背景のスクロールを有効化
         document.body.style.overflow = '';
     }
+    
+    // closeCalendar関数をグローバルに公開
+    (window as any).closeCalendar = closeCalendar;
 
     // カレンダーを開く関数
     function openCalendar(initialDate?: string, initialTime?: string): void {
@@ -136,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // カレンダーが既に開いている場合は、初期化をスキップ（時間のリセットを防ぐ）
             if (!isAlreadyOpen) {
                 // カレンダーの日付を初期化
-                initCalendarDays();
+                initCalendarDays(currentYear, currentMonth);
             }
             
             // SP版のみオーバーレイを表示
@@ -265,9 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 初回実行
     toggleCalendarDisplay();
 
-    // リサイズ時にも実行
-    window.addEventListener('resize', toggleCalendarDisplay);
-    
+
     // バツボタンでカレンダーを閉じる
     if(closeBtn){
         closeBtn.addEventListener('click', (e) => {
@@ -551,9 +674,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             // 1_カレンダーの日付を初期化
                             let calendarDaysInitialized = false;
                             
-                            function initCalendarDays(): void {
-                                const currentYear: number = todayDate.getFullYear();
-                                const currentMonth: number = todayDate.getMonth();
+                            function initCalendarDays(currentYear:number ,currentMonth: number): void {
                                 const reservedDates: string[] = window.reservedDates || [];
                                 const calendarDays: NodeListOf<HTMLElement> = document.querySelectorAll('#calendar-days .calendar-day[data-date]');
 
@@ -603,7 +724,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     } else {
                                         // 数字のみの場合（1-31）
                                         day = parseInt(dataDateAttr || dayEl.textContent?.trim() || '0');
-                                        dateStr = `${String(currentYear)}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                                        dateStr = formatDateToDay(currentYear, currentMonth + 1, day);
                                     }
                                     
                                     const dayDate: Date = new Date(currentYear, currentMonth, day);

@@ -5,22 +5,22 @@
     const date: number = todayForCalendar.getDate();
     const month: number = todayForCalendar.getMonth();
 
-    // 今月の1日を取得 + 曜日の取得
-    const firstDate: Date = new Date(year, month, 1);
-    const firstDay: number = firstDate.getDay();
-    const header2: HTMLElement | null = document.getElementById('month-year');
+// 今月の1日を取得 + 曜日の取得
+const firstDate: Date = new Date(year, month, 1);
+const firstDay: number = firstDate.getDay();
+const header2: HTMLElement | null = document.getElementById('month-year');
 
-    const calendarDays: HTMLElement | null = document.getElementById('calendar-days');
+const calendarDays: HTMLElement | null = document.getElementById('calendar-days');
 
-    // カレンダーの空白調整
-    for (let i: number = 0; i < firstDay; i++) {
-        const emptyDiv: HTMLDivElement = document.createElement('div');
-        emptyDiv.classList.add('calendar-day', 'empty-day', 'past-date'); 
-        calendarDays?.appendChild(emptyDiv);
-    }
-    if (header2) {
-        header2.textContent = `${year}年 ${month + 1}月`;
-    }
+// カレンダーの空白調整
+for (let i: number = 0; i < firstDay; i++) {
+    const emptyDiv: HTMLDivElement = document.createElement('div');
+    emptyDiv.classList.add('calendar-day', 'empty-day', 'past-date'); 
+    calendarDays?.appendChild(emptyDiv);
+}
+if (header2) {
+    header2.textContent = `${year}年 ${month + 1}月`;
+}
 })();
 
 // detail.htmlで使用する関数
