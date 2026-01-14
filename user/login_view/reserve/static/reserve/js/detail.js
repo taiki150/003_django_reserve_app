@@ -35,9 +35,28 @@ const today = formatDateToDay(currentYear, currentMonth + 1, currentDay);
 const oneWeekAgoDate = new Date(todayDate);
 oneWeekAgoDate.setDate(oneWeekAgoDate.getDate() - 7);
 const oneWeekAgo = formatDateToDay(oneWeekAgoDate.getFullYear(), oneWeekAgoDate.getMonth() + 1, oneWeekAgoDate.getDate());
+/***************************************
+ * ▽▽▽ 検索Boxの切り替え ▽▽▽
+***************************************/
+document.addEventListener('DOMContentLoaded', () => {
+    const searchBtn = document.querySelector('.tab-search');
+    const searchBox = document.querySelector('.search-box');
+    if (searchBtn && searchBox) {
+        searchBtn.addEventListener('click', function () {
+            if (searchBtn.classList.contains('active')) {
+                searchBtn.classList.remove('active');
+                searchBox.classList.remove('active');
+            }
+            else {
+                searchBtn.classList.add('active');
+                searchBox.classList.add('active');
+            }
+        });
+    }
+});
 /**
  * 予約リストの表示/非表示を切り替える
- * @param tabType - 'current'（現在の予約）または 'past'（過去の予約）
+ * @param tabType  'current'（現在の予約）または 'past'（過去の予約）
  */
 function switchReservationTab(tabType) {
     const listBoxContainers = document.querySelectorAll('.list-box-container');
@@ -350,8 +369,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // 初回実行
     toggleCalendarDisplay();
-    // リサイズ時にはカレンダーを閉じない（横幅変更時も開いたまま維持）
-    // window.addEventListener('resize', toggleCalendarDisplay); // 削除：横幅変更時にカレンダーを閉じないようにする
     // バツボタンでカレンダーを閉じる
     if (closeBtn) {
         closeBtn.addEventListener('click', (e) => {

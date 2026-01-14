@@ -44,9 +44,29 @@ const oneWeekAgo: string = formatDateToDay(
     oneWeekAgoDate.getDate()
 );
 
+/***************************************
+ * ▽▽▽ 検索Boxの切り替え ▽▽▽
+***************************************/
+document.addEventListener('DOMContentLoaded', () => {
+    const searchBtn = document.querySelector('.tab-search');
+    const searchBox: HTMLElement | null = document.querySelector('.search-box');
+    
+    if(searchBtn && searchBox){
+        searchBtn.addEventListener('click', function() {
+            if(searchBtn.classList.contains('active')){
+                searchBtn.classList.remove('active');
+                searchBox.classList.remove('active');
+            }else{
+                searchBtn.classList.add('active');
+                searchBox.classList.add('active');
+            }
+        });
+    }
+});
+
 /**
  * 予約リストの表示/非表示を切り替える
- * @param tabType - 'current'（現在の予約）または 'past'（過去の予約）
+ * @param tabType  'current'（現在の予約）または 'past'（過去の予約）
  */
 function switchReservationTab(tabType: 'current' | 'past'): void {
     const listBoxContainers: NodeListOf<HTMLElement> = document.querySelectorAll('.list-box-container');

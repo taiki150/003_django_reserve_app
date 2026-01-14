@@ -268,5 +268,8 @@ class DetailView(TemplateView):
         context['reserved_times_by_date'] = reserved_times_by_date
         context['reserved_times_by_date_js'] = reserved_times_by_date_js
         context['days'] = list(range(1, 32))
+        context['year_range'] = range(2025, 2032)
+        context['month_range'] = range(1, 13)
+        context['day_range'] = range(1, 32)
 
         return self.render_to_response(context)
