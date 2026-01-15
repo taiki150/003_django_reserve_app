@@ -1,13 +1,3 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 // グローバル変数
 const todayDate = new Date();
 todayDate.setHours(0, 0, 0, 0);
@@ -51,6 +41,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 searchBtn.classList.add('active');
                 searchBox.classList.add('active');
             }
+        });
+    }
+    const resetBtn = document.getElementById('search-reset-btn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
+            const selects = document.querySelectorAll('.date-range-container select');
+            selects.forEach(select => {
+                select.value = "";
+            });
         });
     }
 });
@@ -136,13 +135,12 @@ document.querySelectorAll('.tab-button').forEach((btn) => {
 ***************************************/
 // DOMContentLoadedで実行
 document.addEventListener('DOMContentLoaded', () => {
-    var _a, _b;
     const calendarBox = document.querySelector('.calendar-wrapper');
     const calendarOverlay = document.querySelector('.calendar-overlay');
     const closeBtn = document.getElementById('calendar-close-btn');
     // 編集ボタン：PC版・SP版両方でカレンダーを表示
     document.querySelectorAll('[id$="-edit-btn"]').forEach(btn => {
-        btn.addEventListener('click', () => __awaiter(void 0, void 0, void 0, function* () {
+        btn.addEventListener('click', async () => {
             highlightParentBox(btn);
             // ボタンのidから予約識別子を取得
             const reservationId = getReservationIdFromButton(btn.id);
@@ -176,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
             catch (error) {
                 alert('編集処理でエラーが発生しました');
             }
-        }));
+        });
     });
     // グローバルに公開
     window.showTimeSelectionPanel = showTimeSelectionPanel;
@@ -391,7 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let editingReservation = null;
     // 削除ボタンのイベントリスナー（動的に生成されるボタンに対応）
     document.querySelectorAll('[id$="-delete-btn"]').forEach(btn => {
-        btn.addEventListener('click', () => __awaiter(void 0, void 0, void 0, function* () {
+        btn.addEventListener('click', async () => {
             highlightParentBox(btn);
             // ボタンのidから予約識別子を取得
             const reservationId = getReservationIdFromButton(btn.id);
@@ -428,7 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert('削除機能が利用できません。ページを再読み込みしてください。');
                     return;
                 }
-                yield MyAsyncFunc('予約削除', () => deleteReservationFunc(date, time));
+                await MyAsyncFunc('予約削除', () => deleteReservationFunc(date, time));
                 // 削除後、カレンダーが開いている場合は閉じる
                 if (calendarBox && calendarBox.classList.contains('active')) {
                     closeCalendar();
@@ -437,7 +435,7 @@ document.addEventListener('DOMContentLoaded', () => {
             catch (error) {
                 alert('削除処理でエラーが発生しました');
             }
-        }));
+        });
     });
     // モーダルを閉じる
     function closeModal() {
@@ -569,8 +567,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     // キャンセルボタン
-    (_a = document.getElementById('cancel-reserve')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', closeModal);
-    (_b = document.getElementById('cancel-reserve-pc')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', function () {
+    document.getElementById('cancel-reserve')?.addEventListener('click', closeModal);
+    document.getElementById('cancel-reserve-pc')?.addEventListener('click', function () {
         const formSectionPc = document.getElementById('reserve-form-section-detail-pc');
         if (formSectionPc)
             formSectionPc.style.display = 'none';
@@ -666,7 +664,6 @@ function initCalendarDays(currentYear, currentMonth) {
             badge.remove();
     });
     calendarDays.forEach((dayEl) => {
-        var _a;
         // data-date属性から日付を取得（既にYYYY-MM-DD形式の場合はそのまま使用、数字のみの場合は日付として解釈）
         const dataDateAttr = dayEl.getAttribute('data-date');
         let day;
@@ -679,7 +676,7 @@ function initCalendarDays(currentYear, currentMonth) {
         }
         else {
             // 数字のみの場合（1-31）
-            day = parseInt(dataDateAttr || ((_a = dayEl.textContent) === null || _a === void 0 ? void 0 : _a.trim()) || '0');
+            day = parseInt(dataDateAttr || dayEl.textContent?.trim() || '0');
             dateStr = formatDateToDay(currentYear, currentMonth + 1, day);
         }
         const dayDate = new Date(currentYear, currentMonth, day);
@@ -780,12 +777,11 @@ function showTimeSelectionPanel(date) {
 }
 // 3_時間ボタンの有効/無効を更新（グローバルに公開）
 function updateTimeButtons(selectedDate) {
-    var _a;
     const timeButtons = document.querySelectorAll('.time-btn');
     const selectedDateObj = new Date(selectedDate.year, selectedDate.month - 1, selectedDate.day);
     selectedDateObj.setHours(0, 0, 0, 0);
     const dateStr = `${selectedDate.year}-${String(selectedDate.month).padStart(2, '0')}-${String(selectedDate.day).padStart(2, '0')}`;
-    let reservedTimes = ((_a = window.reservedTimesByDate) === null || _a === void 0 ? void 0 : _a[dateStr]) || [];
+    let reservedTimes = window.reservedTimesByDate?.[dateStr] || [];
     // 編集モードの場合、編集対象の予約の時間を除外（編集可能にするため）
     if (window.editingReservation && window.editingReservation.date === dateStr) {
         reservedTimes = reservedTimes.filter(time => time !== window.editingReservation.time);

@@ -22,7 +22,7 @@
             <div class="date-group">
                 <label class="date-label">開始日</label>
                 <div class="date-input-group">
-                    <select name="end_year" id="end-year" class="search-select">
+                    <select name="start_year" id="start-year" class="search-select">
                         <option value="">年</option>
                         {% for i in year_range %}
                         <option value="{{ i }}">{{ i }}年</option>
@@ -42,6 +42,15 @@
                         {% for i in day_range %}
                         <option value="{{ i }}">{{ i }}日</option>
                         {% endfor %}
+                    </select>
+
+                    <select name="start_time" id="start-time" class="search-select">
+                        <option value="">時間</option>
+                        <option value="10:00">10時</option>
+                        <option value="11:00">11時</option>
+                        <option value="12:00">12時</option>
+                        <option value="13:00">13時</option>
+                        <option value="14:00">14時</option>
                     </select>
                 </div>
             </div>
@@ -67,6 +76,15 @@
                         {% for i in day_range %}
                         <option value="{{ i }}">{{ i }}日</option>
                         {% endfor %}
+                    </select>
+
+                    <select name="end_time" id="end-time" class="search-select">
+                        <option value="">時間</option>
+                        <option value="10:00">10時</option>
+                        <option value="11:00">11時</option>
+                        <option value="12:00">12時</option>
+                        <option value="13:00">13時</option>
+                        <option value="14:00">14時</option>
                     </select>
                 </div>
             </div>

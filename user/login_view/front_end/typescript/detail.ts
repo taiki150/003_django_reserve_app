@@ -62,7 +62,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    const resetBtn : HTMLElement | null = document.getElementById('search-reset-btn');
+    if(resetBtn){
+        resetBtn.addEventListener('click', function(){
+            const selects = document.querySelectorAll<HTMLSelectElement>('.date-range-container select');
+            selects.forEach(select => {
+                select.value = "";
+            });
+        });
+    }
 });
+
 
 /**
  * 予約リストの表示/非表示を切り替える
