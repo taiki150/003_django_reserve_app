@@ -275,7 +275,24 @@ const updateDisplayForNewReservation = (newDateStr: string, newTimeStr: string, 
     }, 100);
 };
 
-// 非同期処理の型定義
+// 検索機能の非同期処理
+const reserch = (): void => {
+    const start_year = (document.getElementById('start-year') as HTMLInputElement).value;
+    const start_month = (document.getElementById('start-month') as HTMLInputElement).value;
+    const start_day = (document.getElementById('start-day') as HTMLInputElement).value;
+
+    const end_year = (document.getElementById('end-year') as HTMLInputElement).value;
+    const end_month = (document.getElementById('end-month') as HTMLInputElement).value;
+    const end_day = (document.getElementById('end-day') as HTMLInputElement).value;
+
+    if(){
+        
+    }
+}
+
+/************************
+ * 非同期処理の型
+ ************************/
 const MyAsync = async (actionName: string, task: () => Promise<Response>, dateStr?: string, timeStr?: string) => {
     try{
         const response = await task();

@@ -65,10 +65,11 @@
 }
 
 .search-box {
-    width: 100%;
     max-width: 1000px;
+    width: 100%;
+    padding: 0 15px;
     margin: 60px auto 40px auto;
-    padding: 0 10px;
+    /* padding: 0 10px; */
     opacity: 0;
     max-height: 0;
     overflow: hidden;
@@ -83,6 +84,9 @@
 }
 
 .day_search {
+    width: 100%;
+    max-width: 500px;
+    margin: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -100,6 +104,74 @@
     font-weight: 600;
     color: #1eaaa2;
     text-align: center;
+}
+
+/********************************
+* カレンダー検索formのスタイル
+********************************/
+.search-date-box {
+    width: 100%;
+    position: relative;
+}
+
+.search-date-box input {
+    width: 100%;
+    padding: 3px;
+    padding-left: 32px;
+    line-height: 35px;
+    border: 1px solid #aaa;
+    border-radius: 10px;
+}
+
+.daterangepicker td.off {
+    visibility: hidden;
+}
+
+.bi-calendar-minus-fill{
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #aaa;
+}
+
+/********************************
+* 時間検索formのスタイル
+********************************/
+
+.search-time-box {
+    width: 100%;
+}
+
+.search-time-box form {
+    width: 100%;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+input[type=checkbox] {
+    display: none;
+}
+
+.label {
+    flex: 1;
+    border: 2px solid #1eaaa2;
+    padding: 5px 20px;
+    /* width: 50px; */
+    max-width: 500px;
+    margin: 0;
+    background-color: #FFF;
+    color: #1eaaa2;
+    font-weight: bold;
+    border-radius: 5px;
+    box-sizing: border-box;
+    cursor: pointer;
+    font-size: clamp(14px, 2vw, 16px);
+}
+
+input[type="checkbox"]:checked + label {
+    background: #1eaaa37e;
 }
 
 .date-range-container {
@@ -219,8 +291,8 @@
 .reserve-container { 
     max-width: 1000px;
     width: 100%;
-    padding: 0 50px;
-    gap: 50px;
+    padding: 0 15px;
+    gap: 0;
     box-sizing: border-box;
     margin: auto;
     position: relative;
@@ -252,6 +324,7 @@
     flex: 0 0 50% !important;
     opacity: 1;
     transition: max-width 0.75s ease, width 0.75s ease, flex-basis 0.75s ease, opacity 0.75s ease;
+    margin-left: 30px;
 }
 
 .calendar {
@@ -478,6 +551,7 @@ h4 {
         overflow: hidden;
         transition: max-width 0.75s ease, width 0.75s ease, opacity 0.75s ease, transform 0.75s ease;
         will-change: max-width, width, opacity, transform;
+        margin-left: 0;
     }
 
     .calendar-wrapper.active {
@@ -504,16 +578,17 @@ h4 {
 
     .list-box button {
         margin: auto;
-        padding: 5px 0;
-        width: 10%;
-        max-width: 50px;
-        min-width: 45px;
-        font-size: 10px;
-        white-space: nowrap;
+        padding: 15px 20;
+
+        font-size: 14px;
     }
 
     .day_search {
-        padding: 20px 15px;
+        width: 100%;
+        max-width: 500px;
+        margin: auto;
+        padding: 15px 20px;
+        box-sizing: border-box;
         gap: 20px;
     }
 

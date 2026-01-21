@@ -6,6 +6,12 @@
 <link rel="stylesheet" href="{% static 'reserve/css/detail.css' %}">
 <script src="{% static 'reserve/js/calendar_sub.js' %}"></script>
 
+<!-- 日付範囲ピッカーのスクリプト -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+
 {% endblock %}
 {% block content %}
 <h3>予約一覧画面</h3>
@@ -17,6 +23,59 @@
 
 <div class="search-box">
     <div class="day_search">
+
+        <h4 class="search-title">期間の選択</h4>
+        <span class="search-date-box">
+            <input type="text" name="daterange" value="" class="" />
+            <i class="bi bi-calendar-minus-fill"></i>
+        </span>
+        <h4 class="search-title">時間 絞り込み</h4>
+        <span class="search-time-box">
+            <form action="">
+                <input type="checkbox" name="" value="1" id="time_10">
+                <label for="time_10" class="label">10:00</label>
+                <input type="checkbox" name="" value="1" id="time_11">
+                <label for="time_11" class="label">11:00</label>
+                <input type="checkbox" name="" value="1" id="time_12">
+                <label for="time_12" class="label">12:00</label>
+                <input type="checkbox" name="" value="1" id="time_13">
+                <label for="time_13" class="label">13:00</label>
+                <input type="checkbox" name="" value="1" id="time_14">
+                <label for="time_14" class="label">14:00</label>
+            </form>
+        </span>
+
+        <script>
+        $(function() {
+            const start = moment().startOf('month');;
+            const end = moment().add(1, 'month').endOf('month');
+            $('input[name="daterange"]').daterangepicker({
+                // カレンダーの表示期間設定
+                minDate: start,
+                maxDate: end,
+                
+                opens: 'center',
+                // ここから日本語設定
+                locale: {
+                    format: "YYYY/MM/DD",
+                    separator: " 〜 ",
+                    applyLabel: "決定",
+                    cancelLabel: "キャンセル",
+                    fromLabel: "開始日",
+                    toLabel: "終了日",
+                    customRangeLabel: "カスタム",
+                    weekLabel: "週",
+                    daysOfWeek: ["日", "月", "火", "水", "木", "金", "土"],
+                    monthNames: ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
+                    firstDay: 0 // 月曜日から始める場合は1、日曜日の場合は0
+                }
+            }, function(start, end, label) {
+                console.log("選択された期間: " + start.format('YYYY-MM-DD') + ' から ' + end.format('YYYY-MM-DD'));
+            });
+        });
+        </script>
+
+        <!--
         <h4 class="search-title">期間を選択</h4>
         <div class="date-range-container">
             <div class="date-group">
@@ -97,6 +156,7 @@
                 <i class="bi bi-arrow-counterclockwise"></i> リセット
             </button>
         </div>
+        -->
     </div>
 </div>
 <div class="reserve-container">
