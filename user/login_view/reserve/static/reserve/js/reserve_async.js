@@ -1,4 +1,3 @@
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -9,7 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 // 予約作成の非同期処理
-const createReservation = (dateValue, timeValue) => __awaiter(void 0, void 0, void 0, function* () {
+const createReservation = (dateValue, timeValue) => __awaiter(this, void 0, void 0, function* () {
     var _a;
     const csrfToken = (_a = document.querySelector('[name=csrfmiddlewaretoken]')) === null || _a === void 0 ? void 0 : _a.value;
     if (!csrfToken) {
@@ -31,7 +30,7 @@ const createReservation = (dateValue, timeValue) => __awaiter(void 0, void 0, vo
     });
 });
 // 予約更新の非同期処理
-const updateReservation = (oldDate, oldTime, newDate, newTime) => __awaiter(void 0, void 0, void 0, function* () {
+const updateReservation = (oldDate, oldTime, newDate, newTime) => __awaiter(this, void 0, void 0, function* () {
     var _a;
     const csrfToken = (_a = document.querySelector('[name=csrfmiddlewaretoken]')) === null || _a === void 0 ? void 0 : _a.value;
     if (!csrfToken) {
@@ -57,7 +56,7 @@ const updateReservation = (oldDate, oldTime, newDate, newTime) => __awaiter(void
     return response;
 });
 // 予約削除の非同期処理
-const deleteReservation = (date, time) => __awaiter(void 0, void 0, void 0, function* () {
+const deleteReservation = (date, time) => __awaiter(this, void 0, void 0, function* () {
     var _a;
     const csrfToken = (_a = document.querySelector('[name=csrfmiddlewaretoken]')) === null || _a === void 0 ? void 0 : _a.value;
     if (!csrfToken) {
@@ -267,8 +266,11 @@ const updateDisplayForNewReservation = (newDateStr, newTimeStr, oldDateStr) => {
         });
     }, 100);
 };
-// 非同期処理の型定義
-const MyAsync = (actionName, task, dateStr, timeStr) => __awaiter(void 0, void 0, void 0, function* () {
+// 検索機能の非同期処理
+/************************
+ * 非同期処理の型
+ ************************/
+const MyAsync = (actionName, task, dateStr, timeStr) => __awaiter(this, void 0, void 0, function* () {
     try {
         const response = yield task();
         // レスポンスのJSONを一度だけ取得
@@ -313,7 +315,7 @@ const MyAsync = (actionName, task, dateStr, timeStr) => __awaiter(void 0, void 0
 });
 // 予約登録のボタンクリックで非同期処理を実行（イベント委譲を使用）
 // PC版・スマホ版どちらのボタンがクリックされても同じ処理を実行
-document.addEventListener('click', (e) => __awaiter(void 0, void 0, void 0, function* () {
+document.addEventListener('click', (e) => __awaiter(this, void 0, void 0, function* () {
     const target = e.target;
     // .submit-btnがクリックされた場合のみ処理を実行
     if (target.classList.contains('submit-btn')) {
@@ -377,6 +379,18 @@ document.addEventListener('click', (e) => __awaiter(void 0, void 0, void 0, func
             // 新規作成モード：予約を作成
             yield MyAsync('予約作成', () => createReservation(dateValue, timeValue), dateValue, timeValue);
         }
+    }
+    else if (target.classList.contains('label') || target.classList.contains('applyBtn')) {
+        if (target.classList.contains('label')) {
+            let times = [target.innerText];
+        }
+        else if (target.classList.contains('applyBtn')) {
+            const startTime = window.selectedStartDate;
+            const endTime = window.selectedEndDate;
+            console.log(`スタート: ${startTime}`);
+            console.log(`エンド: ${endTime}`);
+        }
+        // times.json
     }
 }));
 // グローバルに公開

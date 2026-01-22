@@ -2,6 +2,10 @@ interface Window {
     reservedDates?: string[];
     reservedTimesByDate?: { [date: string]: string[] };
     editingReservation?: { date: string, time: string } | null;
+
+    // detail.html 絞り込みカレンダーで使用(jQuery)
+    selectedStartDate?: string;
+    selectedEndDate?: string;
 }
 
 // 予約作成の非同期処理
@@ -276,19 +280,9 @@ const updateDisplayForNewReservation = (newDateStr: string, newTimeStr: string, 
 };
 
 // 検索機能の非同期処理
-const reserch = (): void => {
-    const start_year = (document.getElementById('start-year') as HTMLInputElement).value;
-    const start_month = (document.getElementById('start-month') as HTMLInputElement).value;
-    const start_day = (document.getElementById('start-day') as HTMLInputElement).value;
 
-    const end_year = (document.getElementById('end-year') as HTMLInputElement).value;
-    const end_month = (document.getElementById('end-month') as HTMLInputElement).value;
-    const end_day = (document.getElementById('end-day') as HTMLInputElement).value;
 
-    if(){
-        
-    }
-}
+
 
 /************************
  * 非同期処理の型
@@ -419,6 +413,21 @@ document.addEventListener('click', async (e) => {
             // 新規作成モード：予約を作成
             await MyAsync('予約作成', () => createReservation(dateValue, timeValue), dateValue, timeValue);
         }
+    }else if(target.classList.contains('label') || target.classList.contains('applyBtn')){
+        if(target.classList.contains('label')){
+            let times: string[] = [target.innerText];
+            // 選択解除したら配列から抜くコードも書かないと
+
+        }else if(target.classList.contains('applyBtn')){
+            const startTime = window.selectedStartDate;
+            const endTime = window.selectedEndDate;
+
+            console.log(`スタート: ${startTime}`);
+            console.log(`エンド: ${endTime}`);
+            
+        }
+
+        // times.json
     }
 });
 
