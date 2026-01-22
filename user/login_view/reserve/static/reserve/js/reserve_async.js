@@ -315,6 +315,14 @@ const MyAsync = (actionName, task, dateStr, timeStr) => __awaiter(this, void 0, 
 });
 // 予約登録のボタンクリックで非同期処理を実行（イベント委譲を使用）
 // PC版・スマホ版どちらのボタンがクリックされても同じ処理を実行
+let times = [];
+let startTime = undefined;
+let endTime = undefined;
+let searchData = {
+    start_date: undefined,
+    end_date: undefined,
+    times: []
+};
 document.addEventListener('click', (e) => __awaiter(this, void 0, void 0, function* () {
     const target = e.target;
     // .submit-btnがクリックされた場合のみ処理を実行
@@ -381,16 +389,34 @@ document.addEventListener('click', (e) => __awaiter(this, void 0, void 0, functi
         }
     }
     else if (target.classList.contains('label') || target.classList.contains('applyBtn')) {
+        // 時間の絞り込みした際の処理
         if (target.classList.contains('label')) {
-            let times = [target.innerText];
+            const targetLabel = target;
+            const targetForm = document.getElementById(targetLabel.htmlFor);
+            // 時間の絞り込みを選択した際の処理
+            if (!targetForm.checked) {
+                times.push(target.innerText);
+                // 時間の選択を解除した際の処理
+            }
+            else {
+                times = times.filter(time => time !== target.innerText);
+            }
+            console.log(times);
+            // カレンダーで日付範囲をした際の処理
         }
         else if (target.classList.contains('applyBtn')) {
-            const startTime = window.selectedStartDate;
-            const endTime = window.selectedEndDate;
-            console.log(`スタート: ${startTime}`);
-            console.log(`エンド: ${endTime}`);
+            startTime = window.selectedStartDate;
+            endTime = window.selectedEndDate;
+            if (startTime === undefined || endTime === undefined) {
+                return; // クリックイベントの中断
+            }
         }
-        // times.json
+        searchData = {
+            start_date: startTime,
+            end_date: endTime,
+            times: times
+        };
+        console.log(searchData);
     }
 }));
 // グローバルに公開

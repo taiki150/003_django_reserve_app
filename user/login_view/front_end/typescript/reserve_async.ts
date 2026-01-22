@@ -336,8 +336,21 @@ const MyAsync = async (actionName: string, task: () => Promise<Response>, dateSt
 
 // 予約登録のボタンクリックで非同期処理を実行（イベント委譲を使用）
 // PC版・スマホ版どちらのボタンがクリックされても同じ処理を実行
+let times: string[] = [];
+let startTime: string | undefined = undefined;
+let endTime: string | undefined = undefined;
+let searchData: {
+    start_date?: string;
+    end_date?: string;
+    times: string[];
+} = {
+    start_date: undefined,
+    end_date: undefined,
+    times: []
+};
+
 document.addEventListener('click', async (e) => {
-    const target = e.target as HTMLElement;
+    const target = e.target as HTMLLabelElement | HTMLButtonElement;
     // .submit-btnがクリックされた場合のみ処理を実行
     if (target.classList.contains('submit-btn')) {
         e.preventDefault();
@@ -414,20 +427,41 @@ document.addEventListener('click', async (e) => {
             await MyAsync('予約作成', () => createReservation(dateValue, timeValue), dateValue, timeValue);
         }
     }else if(target.classList.contains('label') || target.classList.contains('applyBtn')){
+
+        // 時間の絞り込みした際の処理
         if(target.classList.contains('label')){
-            let times: string[] = [target.innerText];
-            // 選択解除したら配列から抜くコードも書かないと
-
-        }else if(target.classList.contains('applyBtn')){
-            const startTime = window.selectedStartDate;
-            const endTime = window.selectedEndDate;
-
-            console.log(`スタート: ${startTime}`);
-            console.log(`エンド: ${endTime}`);
+            const targetLabel = target as HTMLLabelElement;
+            const targetForm = document.getElementById(targetLabel.htmlFor) as HTMLInputElement;
             
+            // 時間の絞り込みを選択した際の処理
+            if(!targetForm.checked){
+                times.push(target.innerText);
+                
+                // 時間の選択を解除した際の処理
+            }else{
+                times = times.filter(time => time !== target.innerText);  
+            }
+
+            console.log(times);
+            
+
+        // カレンダーで日付範囲をした際の処理
+        }else if(target.classList.contains('applyBtn')){
+            startTime = window.selectedStartDate;
+            endTime = window.selectedEndDate;
+            if(startTime === undefined || endTime === undefined){
+                return; // クリックイベントの中断
+            }
         }
 
-        // times.json
+        searchData = {
+            start_date: startTime,
+            end_date: endTime,
+            times: times
+        }
+
+        console.log(searchData);
+        
     }
 });
 
