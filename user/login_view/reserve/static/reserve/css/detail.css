@@ -121,6 +121,7 @@
     line-height: 35px;
     border: 1px solid #aaa;
     border-radius: 10px;
+    cursor: pointer;
 }
 
 .daterangepicker td.off {

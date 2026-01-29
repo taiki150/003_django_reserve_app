@@ -1,3 +1,4 @@
+"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 // 予約作成の非同期処理
-const createReservation = (dateValue, timeValue) => __awaiter(this, void 0, void 0, function* () {
+const createReservation = (dateValue, timeValue) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const csrfToken = (_a = document.querySelector('[name=csrfmiddlewaretoken]')) === null || _a === void 0 ? void 0 : _a.value;
     if (!csrfToken) {
@@ -30,7 +31,7 @@ const createReservation = (dateValue, timeValue) => __awaiter(this, void 0, void
     });
 });
 // 予約更新の非同期処理
-const updateReservation = (oldDate, oldTime, newDate, newTime) => __awaiter(this, void 0, void 0, function* () {
+const updateReservation = (oldDate, oldTime, newDate, newTime) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const csrfToken = (_a = document.querySelector('[name=csrfmiddlewaretoken]')) === null || _a === void 0 ? void 0 : _a.value;
     if (!csrfToken) {
@@ -56,7 +57,7 @@ const updateReservation = (oldDate, oldTime, newDate, newTime) => __awaiter(this
     return response;
 });
 // 予約削除の非同期処理
-const deleteReservation = (date, time) => __awaiter(this, void 0, void 0, function* () {
+const deleteReservation = (date, time) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const csrfToken = (_a = document.querySelector('[name=csrfmiddlewaretoken]')) === null || _a === void 0 ? void 0 : _a.value;
     if (!csrfToken) {
@@ -79,6 +80,54 @@ const deleteReservation = (date, time) => __awaiter(this, void 0, void 0, functi
     });
     return response;
 });
+// 検索機能の非同期処理
+const searchReservation = (target) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const csrfToken = (_a = document.querySelector('[name=csrfmiddlewaretoken]')) === null || _a === void 0 ? void 0 : _a.value;
+    // 時間の絞り込みした際の処理
+    if (target.classList.contains('label')) {
+        const targetLabel = target;
+        const targetForm = document.getElementById(targetLabel.htmlFor);
+        // 時間の絞り込みを選択した際の処理
+        if (!targetForm.checked) {
+            times.push(target.innerText);
+            // 時間の選択を解除した際の処理
+        }
+        else {
+            times = times.filter(time => time !== target.innerText);
+        }
+        // カレンダーで日付範囲をした際の処理
+    }
+    else if (target.classList.contains('applyBtn')) {
+        startTime = window.selectedStartDate;
+        endTime = window.selectedEndDate;
+        if (startTime === undefined || endTime === undefined) {
+            return; // クリックイベントの中断
+        }
+    }
+    const requestBody = {
+        start_date: startTime,
+        end_date: endTime,
+        times: times
+    };
+    const response = yield fetch('/reserve/api/reservation/search/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+        },
+        body: JSON.stringify(requestBody),
+    });
+    const result = yield response.json();
+    console.log(result);
+    updateDisplaySearch(result);
+    return response;
+});
+/*
+ *
+ * 表示の更新に関する関数定義
+ *
+ * ▽▽▽　▽▽▽　▽▽▽　▽▽▽ */
 // 予約表示を更新（新規作成用）
 const updateDisplay = (dateStr, timeStr) => {
     var _a;
@@ -266,11 +315,51 @@ const updateDisplayForNewReservation = (newDateStr, newTimeStr, oldDateStr) => {
         });
     }, 100);
 };
-// 検索機能の非同期処理
+// 検索結果の表示処理処理【非同期処理】
+const updateDisplaySearch = (result) => {
+    const startDate = result.startDate;
+    const endDate = result.endDate;
+    const times = result.times;
+    if (startDate && endDate) {
+        const listBoxes = document.querySelectorAll('.list-box-container');
+        listBoxes.forEach((box) => {
+            // 各Boxのdata-date属性の値を取得
+            const boxDate = box.dataset.date;
+            if (boxDate) {
+                // boxDateが検索した日付の期間内であればtrue
+                const inDate = boxDate >= startDate && boxDate <= endDate;
+                if (inDate) {
+                    box.style.display = 'block';
+                }
+                else {
+                    box.style.display = 'none';
+                }
+            }
+        });
+    }
+    if (times.length != 0) {
+        const timeListBoxes = document.querySelectorAll('.time-box');
+        timeListBoxes.forEach((box) => {
+            box.style.display = 'block'; // または元の表示状態に戻す
+        });
+        let count = 0;
+        timeListBoxes.forEach((box) => {
+            const timeText = box.dataset.time;
+            if (timeText) {
+                if (times.includes(timeText)) {
+                    box.style.display = "block";
+                }
+                else {
+                    box.style.display = "none";
+                }
+            }
+        });
+    }
+};
 /************************
  * 非同期処理の型
  ************************/
-const MyAsync = (actionName, task, dateStr, timeStr) => __awaiter(this, void 0, void 0, function* () {
+const MyAsync = (actionName, task, dateStr, timeStr) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const response = yield task();
         // レスポンスのJSONを一度だけ取得
@@ -323,7 +412,7 @@ let searchData = {
     end_date: undefined,
     times: []
 };
-document.addEventListener('click', (e) => __awaiter(this, void 0, void 0, function* () {
+document.addEventListener('click', (e) => __awaiter(void 0, void 0, void 0, function* () {
     const target = e.target;
     // .submit-btnがクリックされた場合のみ処理を実行
     if (target.classList.contains('submit-btn')) {
@@ -389,34 +478,7 @@ document.addEventListener('click', (e) => __awaiter(this, void 0, void 0, functi
         }
     }
     else if (target.classList.contains('label') || target.classList.contains('applyBtn')) {
-        // 時間の絞り込みした際の処理
-        if (target.classList.contains('label')) {
-            const targetLabel = target;
-            const targetForm = document.getElementById(targetLabel.htmlFor);
-            // 時間の絞り込みを選択した際の処理
-            if (!targetForm.checked) {
-                times.push(target.innerText);
-                // 時間の選択を解除した際の処理
-            }
-            else {
-                times = times.filter(time => time !== target.innerText);
-            }
-            console.log(times);
-            // カレンダーで日付範囲をした際の処理
-        }
-        else if (target.classList.contains('applyBtn')) {
-            startTime = window.selectedStartDate;
-            endTime = window.selectedEndDate;
-            if (startTime === undefined || endTime === undefined) {
-                return; // クリックイベントの中断
-            }
-        }
-        searchData = {
-            start_date: startTime,
-            end_date: endTime,
-            times: times
-        };
-        console.log(searchData);
+        searchReservation(target);
     }
 }));
 // グローバルに公開

@@ -171,6 +171,48 @@ class APIReserveDeleteView(View):
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
+# ******************************** #
+#        予約検索API（非同期）            
+# ******************************** #
+
+class APIReserveSearchView(View):
+    @method_decorator(login_required)
+    def post(self, request, *args, **kwargs):
+
+        try:
+            #jsonデータの取得
+            data = json.loads(request.body)
+            startDate = data.get('start_date')
+            endDate = data.get('end_date')
+            times = data.get('times')
+
+            # ログインユーザーの取得
+            query = Reservation.objects.filter(user=request.user)
+
+            ## startDate, endDateが両方存在すれば検索実行
+            if startDate and endDate:
+                query = query.filter(date__range=[startDate, endDate])
+
+            # timesが存在すれば検索実行(上記の検索結果にプラスする)
+            if times:
+                query = query.filter(time__in=times)
+            
+            return JsonResponse({
+                'success': True, 
+                'message': '検索結果',
+                'startDate': startDate,
+                'endDate': endDate,
+                'times': times,
+
+            }, status=200)
+
+            
+        except json.JSONDecodeError:
+            print("エラー: 無効なJSONデータです")
+            # return JsonResponse({'success': False, 'error': '無効なJSONデータです'}, status=400)
+        except Exception as e:
+            print(f"エラー: {str(e)}")
+            # return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
 # ******************************** #

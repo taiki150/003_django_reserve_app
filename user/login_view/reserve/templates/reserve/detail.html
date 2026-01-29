@@ -88,7 +88,7 @@
         <div class="list-box-container" id="{{ date_data.date_iso }}-box" data-date="{{ date_data.date_iso }}">
         <h4>{{ date }}</h4>
             {% for time_data in date_data.times %}
-                <li>
+                <li class="time-box" data-time="{{ time_data.display }}">
                     <div class="list-box">
                         <p>{{ time_data.display }}</p>
                         <button id="{{ date_data.date_iso }}-{{ time_data.id }}-delete-btn">削除</button>

@@ -1,3 +1,4 @@
+"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -150,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeBtn = document.getElementById('calendar-close-btn');
     // 編集ボタン：PC版・SP版両方でカレンダーを表示
     document.querySelectorAll('[id$="-edit-btn"]').forEach(btn => {
-        btn.addEventListener('click', () => __awaiter(this, void 0, void 0, function* () {
+        btn.addEventListener('click', () => __awaiter(void 0, void 0, void 0, function* () {
             highlightParentBox(btn);
             // ボタンのidから予約識別子を取得
             const reservationId = getReservationIdFromButton(btn.id);
@@ -399,7 +400,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let editingReservation = null;
     // 削除ボタンのイベントリスナー（動的に生成されるボタンに対応）
     document.querySelectorAll('[id$="-delete-btn"]').forEach(btn => {
-        btn.addEventListener('click', () => __awaiter(this, void 0, void 0, function* () {
+        btn.addEventListener('click', () => __awaiter(void 0, void 0, void 0, function* () {
             highlightParentBox(btn);
             // ボタンのidから予約識別子を取得
             const reservationId = getReservationIdFromButton(btn.id);
