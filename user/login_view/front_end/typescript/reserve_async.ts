@@ -114,23 +114,24 @@ const searchReservation = async (target: HTMLElement) => {
             
             // 時間の選択を解除した際の処理
         }else{
-            times = times.filter(time => time !== target.innerText);  
+            times = times.filter(time => time !== target.innerText);
         }
 
-    // カレンダーで日付範囲をした際の処理
+        // カレンダーで日付範囲をした際の処理
     }else if(target.classList.contains('applyBtn')){
-        startTime = window.selectedStartDate;
-        endTime = window.selectedEndDate;
-        if(startTime === undefined || endTime === undefined){
-            return; // クリックイベントの中断
+        startDate = window.selectedStartDate;
+        endDate = window.selectedEndDate;
+        if(startDate == undefined || endDate == undefined){
+            return;
         }
     }
 
     const requestBody = {
-        start_date: startTime,
-        end_date: endTime,
+        start_date: startDate,
+        end_date: endDate,
         times: times
     };
+
     
     const response = await fetch('/reserve/api/reservation/search/',{
         method: 'POST',
@@ -393,6 +394,11 @@ const updateDisplaySearch = (result: ReserveSearchData) => {
             }
         });
         
+    }else{
+        const timeListBoxes = document.querySelectorAll<HTMLDivElement>('.time-box');
+        timeListBoxes.forEach((box) => {
+            box.style.display = "block";
+        });
     }
     
     
@@ -453,8 +459,8 @@ const MyAsync = async (actionName: string, task: () => Promise<Response>, dateSt
 // 予約登録のボタンクリックで非同期処理を実行（イベント委譲を使用）
 // PC版・スマホ版どちらのボタンがクリックされても同じ処理を実行
 let times: string[] = [];
-let startTime: string | undefined = undefined;
-let endTime: string | undefined = undefined;
+let startDate: string | undefined = undefined;
+let endDate: string | undefined = undefined;
 let searchData: {
     start_date?: string;
     end_date?: string;

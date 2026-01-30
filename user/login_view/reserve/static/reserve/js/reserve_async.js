@@ -99,15 +99,15 @@ const searchReservation = (target) => __awaiter(void 0, void 0, void 0, function
         // カレンダーで日付範囲をした際の処理
     }
     else if (target.classList.contains('applyBtn')) {
-        startTime = window.selectedStartDate;
-        endTime = window.selectedEndDate;
-        if (startTime === undefined || endTime === undefined) {
-            return; // クリックイベントの中断
+        startDate = window.selectedStartDate;
+        endDate = window.selectedEndDate;
+        if (startDate == undefined || endDate == undefined) {
+            return;
         }
     }
     const requestBody = {
-        start_date: startTime,
-        end_date: endTime,
+        start_date: startDate,
+        end_date: endDate,
         times: times
     };
     const response = yield fetch('/reserve/api/reservation/search/', {
@@ -355,6 +355,12 @@ const updateDisplaySearch = (result) => {
             }
         });
     }
+    else {
+        const timeListBoxes = document.querySelectorAll('.time-box');
+        timeListBoxes.forEach((box) => {
+            box.style.display = "block";
+        });
+    }
 };
 /************************
  * 非同期処理の型
@@ -405,8 +411,8 @@ const MyAsync = (actionName, task, dateStr, timeStr) => __awaiter(void 0, void 0
 // 予約登録のボタンクリックで非同期処理を実行（イベント委譲を使用）
 // PC版・スマホ版どちらのボタンがクリックされても同じ処理を実行
 let times = [];
-let startTime = undefined;
-let endTime = undefined;
+let startDate = undefined;
+let endDate = undefined;
 let searchData = {
     start_date: undefined,
     end_date: undefined,
