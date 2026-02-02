@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from django.views.generic import(
     TemplateView,View, 
 )
@@ -264,15 +264,25 @@ class DetailView(TemplateView):
     template_name = 'reserve/detail.html'
 
     def get(self, request, *args, **kwargs):
-        # ログインユーザーの予約済み日付を取得
-        reserved_dates = Reservation.objects.filter(
-            user=request.user
-        ).values_list('date', flat=True).distinct()
+        # 表示対象の日付範囲を設定
+        # 過去1週間分 + 編集可能な1ヶ月分（本日から1ヶ月後まで）のみHTML生成
+        today = date.today()
+        one_week_ago = today - timedelta(days=7)
+        one_month_later = today + timedelta(days=30)
 
-        # 日付と時間の組み合わせを取得
+        # ログインユーザーの予約を日付範囲でフィルタ（過去1週間〜1ヶ月後）
+        # それ以外の予約はHTML生成しない（データ量削減）
+        date_range_filter = {
+            'user': request.user,
+            'date__range': [one_week_ago, one_month_later]
+        }
         reservations = Reservation.objects.filter(
-            user=request.user
-        ).values('date', 'time')
+            **date_range_filter
+        ).values('date', 'time').order_by('date', 'time')
+
+        reserved_dates = Reservation.objects.filter(
+            **date_range_filter
+        ).values_list('date', flat=True).distinct()
         
         # 日付を文字列形式に変換（JavaScript用）
         reserved_dates_str = [reserved_date.strftime('%Y-%m-%d') for reserved_date in reserved_dates]

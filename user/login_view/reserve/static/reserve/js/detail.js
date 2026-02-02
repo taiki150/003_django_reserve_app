@@ -53,6 +53,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+    // 並び替えボタンの切り替え（絞り込みBoxと同様の動作）
+    const sortBtn = document.querySelector('.tab-sort');
+    const sortOptions = document.querySelector('.sort-options');
+    if (sortBtn && sortOptions) {
+        sortBtn.addEventListener('click', function () {
+            if (sortBtn.classList.contains('active')) {
+                sortBtn.classList.remove('active');
+                sortOptions.classList.remove('active');
+            }
+            else {
+                sortBtn.classList.add('active');
+                sortOptions.classList.add('active');
+            }
+        });
+    }
     const resetBtn = document.getElementById('search-reset-btn');
     if (resetBtn) {
         resetBtn.addEventListener('click', function () {

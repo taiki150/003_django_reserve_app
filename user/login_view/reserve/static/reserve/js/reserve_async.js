@@ -119,7 +119,6 @@ const searchReservation = (target) => __awaiter(void 0, void 0, void 0, function
         body: JSON.stringify(requestBody),
     });
     const result = yield response.json();
-    console.log(result);
     updateDisplaySearch(result);
     return response;
 });
@@ -317,50 +316,39 @@ const updateDisplayForNewReservation = (newDateStr, newTimeStr, oldDateStr) => {
 };
 // 検索結果の表示処理処理【非同期処理】
 const updateDisplaySearch = (result) => {
-    const startDate = result.startDate;
-    const endDate = result.endDate;
-    const times = result.times;
-    if (startDate && endDate) {
-        const listBoxes = document.querySelectorAll('.list-box-container');
-        listBoxes.forEach((box) => {
-            // 各Boxのdata-date属性の値を取得
-            const boxDate = box.dataset.date;
-            if (boxDate) {
-                // boxDateが検索した日付の期間内であればtrue
-                const inDate = boxDate >= startDate && boxDate <= endDate;
-                if (inDate) {
-                    box.style.display = 'block';
+    const listBoxes = document.querySelectorAll('.list-box-container');
+    const { startDate, endDate, times } = result;
+    let isDate = startDate == undefined && endDate == undefined;
+    listBoxes.forEach((box) => {
+        // 各Boxのdata-date属性の値を取得
+        const boxDate = box.dataset.date;
+        // boxDateが検索した日付の期間内であればtrue
+        const inDate = boxDate ? (boxDate >= startDate && boxDate <= endDate) : false;
+        if (boxDate) {
+            // 日付が範囲外なら非表示にして次の日付Boxへ
+            if (!inDate || isDate) {
+                box.style.display = 'none';
+                console.log("aaa");
+                return;
+            }
+            console.log("とおてます");
+            const timeItems = box.querySelectorAll('.time-box');
+            let flgTimeNoCount = false;
+            timeItems.forEach((timeItem) => {
+                // <li data-time="">から時間を取得
+                const timeText = timeItem.dataset.time;
+                const isTimeMatch = times.length === 0 || (timeText && times.includes(timeText));
+                if (isTimeMatch) {
+                    timeItem.style.display = "block";
+                    flgTimeNoCount = true;
                 }
                 else {
-                    box.style.display = 'none';
+                    timeItem.style.display = "none";
                 }
-            }
-        });
-    }
-    if (times.length != 0) {
-        const timeListBoxes = document.querySelectorAll('.time-box');
-        timeListBoxes.forEach((box) => {
-            box.style.display = 'block'; // または元の表示状態に戻す
-        });
-        let count = 0;
-        timeListBoxes.forEach((box) => {
-            const timeText = box.dataset.time;
-            if (timeText) {
-                if (times.includes(timeText)) {
-                    box.style.display = "block";
-                }
-                else {
-                    box.style.display = "none";
-                }
-            }
-        });
-    }
-    else {
-        const timeListBoxes = document.querySelectorAll('.time-box');
-        timeListBoxes.forEach((box) => {
-            box.style.display = "block";
-        });
-    }
+            });
+            box.style.display = flgTimeNoCount ? 'block' : 'none';
+        }
+    });
 };
 /************************
  * 非同期処理の型
