@@ -122,6 +122,23 @@ const searchReservation = (target) => __awaiter(void 0, void 0, void 0, function
     updateDisplaySearch(result);
     return response;
 });
+// 並び替えの非同期処理
+const sortReservation = (target) => __awaiter(void 0, void 0, void 0, function* () {
+    const listBoxes = document.querySelectorAll('.list-box-container');
+    const items = Array.from(listBoxes).map(box => ({
+        date: box.dataset.date || "",
+        element: box
+    }));
+    // 古い順をクリックした時の処理
+    if (target.classList.contains("sort-old")) {
+        items.sort((a, b) => a.date.localeCompare(b.date));
+        // 新しい順をクリックした時の処理
+    }
+    else if (target.classList.contains("sort-new")) {
+        items.sort((a, b) => b.date.localeCompare(a.date));
+    }
+    updateDisplaySort(items);
+});
 /*
  *
  * 表示の更新に関する関数定義
@@ -328,10 +345,7 @@ const updateDisplaySearch = (result) => {
             // 日付が範囲外なら非表示にして次の日付Boxへ
             if (!inDate || isDate) {
                 box.style.display = 'none';
-                console.log("aaa");
-                return;
             }
-            console.log("とおてます");
             const timeItems = box.querySelectorAll('.time-box');
             let flgTimeNoCount = false;
             timeItems.forEach((timeItem) => {
@@ -347,6 +361,15 @@ const updateDisplaySearch = (result) => {
                 }
             });
             box.style.display = flgTimeNoCount ? 'block' : 'none';
+        }
+    });
+};
+// 並び替えの表示処理処理【非同期処理】
+const updateDisplaySort = (items) => {
+    items.forEach((item) => {
+        const reserveUl = document.querySelector('.reserve-container ul');
+        if (reserveUl) {
+            reserveUl.appendChild(item.element);
         }
     });
 };
@@ -473,6 +496,9 @@ document.addEventListener('click', (e) => __awaiter(void 0, void 0, void 0, func
     }
     else if (target.classList.contains('label') || target.classList.contains('applyBtn')) {
         searchReservation(target);
+    }
+    else if (target.classList.contains('sort-old') || target.classList.contains('sort-new')) {
+        sortReservation(target);
     }
 }));
 // グローバルに公開

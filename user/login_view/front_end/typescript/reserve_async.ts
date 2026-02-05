@@ -14,6 +14,11 @@ interface ReserveSearchData {
     times: string[];
 }
 
+type SortItem = {
+    date: string;
+    element: HTMLDivElement;
+};
+
 // 予約作成の非同期処理
 const createReservation = async (dateValue: string, timeValue: string) => {
     const csrfToken = (document.querySelector('[name=csrfmiddlewaretoken]') as HTMLInputElement)?.value;
@@ -147,9 +152,28 @@ const searchReservation = async (target: HTMLElement) => {
     updateDisplaySearch(result)
 
     return response;
-
-    
 };
+
+// 並び替えの非同期処理
+const sortReservation = async (target: HTMLElement) => {
+    const listBoxes = document.querySelectorAll<HTMLDivElement>('.list-box-container');
+
+    const items: SortItem[] = Array.from(listBoxes).map(box => ({
+        date: box.dataset.date || "",
+        element: box
+    }));    
+
+    // 古い順をクリックした時の処理
+    if(target.classList.contains("sort-old")){
+        items.sort((a, b) => a.date.localeCompare(b.date));
+        
+    // 新しい順をクリックした時の処理
+    }else if(target.classList.contains("sort-new")){
+        items.sort((a, b) => b.date.localeCompare(a.date));
+    }
+
+    updateDisplaySort(items);
+}
 
 /*
  *
@@ -361,10 +385,7 @@ const updateDisplaySearch = (result: ReserveSearchData) => {
             // 日付が範囲外なら非表示にして次の日付Boxへ
             if(!inDate || isDate){
                 box.style.display = 'none';
-                console.log("aaa");
-                return;
             }
-            console.log("とおてます");
             
 
             const timeItems = box.querySelectorAll<HTMLLIElement>('.time-box');
@@ -388,6 +409,16 @@ const updateDisplaySearch = (result: ReserveSearchData) => {
     });
 }
 
+// 並び替えの表示処理処理【非同期処理】
+const updateDisplaySort = (items:SortItem[]) => {
+    items.forEach((item) => {
+        const reserveUl = document.querySelector('.reserve-container ul')
+        if(reserveUl){
+            reserveUl.appendChild(item.element);
+        }
+
+    })
+}
 
 
 /************************
@@ -534,8 +565,9 @@ document.addEventListener('click', async (e) => {
         }
     }else if(target.classList.contains('label') || target.classList.contains('applyBtn')){
 
-        searchReservation(target);
-        
+        searchReservation(target); 
+    }else if(target.classList.contains('sort-old') || target.classList.contains('sort-new')){
+        sortReservation(target);
     }
 });
 

@@ -57,14 +57,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const sortBtn = document.querySelector('.tab-sort');
     const sortOptions = document.querySelector('.sort-options');
     if (sortBtn && sortOptions) {
-        sortBtn.addEventListener('click', function () {
-            if (sortBtn.classList.contains('active')) {
-                sortBtn.classList.remove('active');
-                sortOptions.classList.remove('active');
+        document.addEventListener('click', function (e) {
+            const actionElement = e.target;
+            if (actionElement == sortBtn) {
+                if (sortBtn.classList.contains('active')) {
+                    sortBtn.classList.remove('active');
+                    sortOptions.classList.remove('active');
+                }
+                else {
+                    sortBtn.classList.add('active');
+                    sortOptions.classList.add('active');
+                }
             }
             else {
-                sortBtn.classList.add('active');
-                sortOptions.classList.add('active');
+                if (sortBtn.classList.contains('active')) {
+                    sortBtn.classList.remove('active');
+                    sortOptions.classList.remove('active');
+                }
             }
         });
     }
