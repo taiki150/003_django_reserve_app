@@ -2,10 +2,16 @@
 {% load static %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'reserve/css/calendar.css' %}">
+<link rel="stylesheet" href="{% static 'reserve/css/reserve.css' %}">
 {% endblock %}
 {% block content %}
 <h3>予約画面</h3>
 <div class="main_contents">
+
+    <div class="massage-box">
+        <p>日付を選択してください</p>
+    </div>
+
     <div class="reserve-container">
         {% include 'reserve/include/calendar.html' %}
         <style>

@@ -324,6 +324,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // キャンセルボタン
     document.getElementById('cancel-reserve')?.addEventListener('click', closeModal);
     
+
+    function timeBtnValidation(){
+        console.log("a");
+        
+    }
+    
+
     // ウィンドウリサイズ時の処理
     window.addEventListener('resize', function() {
         if (window.innerWidth >= 769) {

@@ -1,0 +1,50 @@
+.main_contents {
+    position: relative;
+}
+
+.main_contents .massage-box {
+    opacity: 0;
+    width: 100%;
+    position: absolute;
+    width: 100%;
+    z-index: 10;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #e8f7f6 0%, #f0faf9 100%);
+    border: 1px solid #1eaaa2;
+    box-shadow: 0 2px 12px #1eaaa21f;
+    color: #2d6a64;
+    transition: opacity 1s, transform 2s;
+    transform: translateY(-15px);
+}
+
+.massage-box.red {
+    background: linear-gradient(135deg, #fff0f0 0%, #ffe8e8 100%);
+    border-color: #e07c7c;
+    box-shadow: 0 2px 12px hsla(0, 62%, 68%, 0.12);
+    color: #8b3a3a;
+}
+
+.massage-box.blue {
+    background: linear-gradient(135deg, #eef4ff 0%, #e8f0fe 100%);
+    border-color: #5b8fd6;
+    box-shadow: 0 2px 12px rgba(91, 143, 214, 0.12);
+    color: #2c5282;
+}
+
+.main_contents .massage-box p {
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    margin: auto;
+    font-weight: 700;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.main_contents .massage-box.active{
+
+    opacity: 1;
+    transform: translateY(0px);
+}

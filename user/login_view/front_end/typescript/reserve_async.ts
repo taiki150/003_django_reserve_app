@@ -368,18 +368,41 @@ const updateDisplayForNewReservation = (newDateStr: string, newTimeStr: string, 
 };
 
 
+let lastSearchResult: ReserveSearchData | null = null;
 
 // 検索結果の表示処理処理【非同期処理】
 const updateDisplaySearch = (result: ReserveSearchData) => {
     const listBoxes = document.querySelectorAll<HTMLDivElement>('.list-box-container');
+    const activeTab = document.querySelector('.tab-button.active') as HTMLDivElement;
+
+    lastSearchResult = result;
+
+    // 現在・過去のタブの情報取得
+    const activeTabData = activeTab.dataset.tab;
+    
+    
     const { startDate, endDate, times } = result;
     let isDate = startDate == undefined && endDate == undefined;
 
     listBoxes.forEach((box) => {
+        // タブで非表示の箱はインラインを外し、表示制御はCSSに任せる（現在タブで過去が表示されるのを防ぐ）
+        if (!box.classList.contains('tab-visible')) {
+            box.style.display = '';
+            return;
+        }
+
         // 各Boxのdata-date属性の値を取得
         const boxDate = box.dataset.date;
         // boxDateが検索した日付の期間内であればtrue
         const inDate = boxDate ? (boxDate >= startDate && boxDate <= endDate) : false;
+        const boxClassName:string = box.className;
+
+        // 過去タブであれば過去分の情報のみ表示切り替え
+        if(activeTabData && activeTabData === "past"){
+            if(boxClassName != 'list-box-container tab-visible'){
+                return;
+            }
+        }
         
         if(boxDate){
             // 日付が範囲外なら非表示にして次の日付Boxへ
@@ -570,6 +593,14 @@ document.addEventListener('click', async (e) => {
         sortReservation(target);
     }
 });
+
+
+const reapplySearchFilter = (): void => {
+    if (lastSearchResult) {
+        updateDisplaySearch(lastSearchResult);
+    }
+};
+(window as any).reapplySearchFilter = reapplySearchFilter;
 
 // グローバルに公開
 (window as any).deleteReservation = deleteReservation;

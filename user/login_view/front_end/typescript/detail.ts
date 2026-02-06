@@ -107,6 +107,11 @@ document.addEventListener('DOMContentLoaded', () => {
 function switchReservationTab(tabType: 'current' | 'past'): void {
     const listBoxContainers: NodeListOf<HTMLElement> = document.querySelectorAll('.list-box-container');
     
+    // 一旦リセット 絞り込み機能の調整
+    listBoxContainers.forEach((box) => {
+        box.style.display = '';
+    });
+
     listBoxContainers.forEach((box) => {
         const dateDate: string | null = box.getAttribute('data-date');
         
@@ -155,6 +160,12 @@ function switchReservationTab(tabType: 'current' | 'past'): void {
             }
         }
     });
+
+    // タブ切り替え後、前回の絞り込みを再適用する
+    const reapply = (window as any).reapplySearchFilter;
+    if (typeof reapply === 'function') {
+        reapply();
+    }
 }
 
 // 初期状態：現在の予約タブを表示
