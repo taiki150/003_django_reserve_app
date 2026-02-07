@@ -356,9 +356,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                                         const formDateDisplay = document.querySelector('#form-date-display, #form-date-display-pc');
                                                         const formTimeDisplay = document.querySelector('#form-time-display, #form-time-display-pc');
                                                         if (window.editingReservation && formDateDisplay && formTimeDisplay) {
-                                                            const oldDateDisplay = formatDateForDisplay(window.editingReservation.date);
+                                                            const oldDateDisplay = formatDateToDisplayStr(window.editingReservation.date);
                                                             const oldTimeDisplay = window.editingReservation.time;
-                                                            const newDateDisplay = formatDateForDisplay(initialDate);
+                                                            const newDateDisplay = formatDateToDisplayStr(initialDate);
                                                             formDateDisplay.textContent = `${oldDateDisplay} → ${newDateDisplay}`;
                                                             formTimeDisplay.textContent = `${oldTimeDisplay} → ${initialTime}`;
                                                         }
@@ -535,7 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 selectedTimeInput.value = selectedTime;
                             // 編集モードの場合は変更前と変更後を表示
                             if (window.editingReservation && formDateDisplay && formTimeDisplay) {
-                                const oldDateDisplay = formatDateForDisplay(window.editingReservation.date);
+                                const oldDateDisplay = formatDateToDisplayStr(window.editingReservation.date);
                                 const oldTimeDisplay = window.editingReservation.time;
                                 formDateDisplay.textContent = `${oldDateDisplay} → ${dateDisplayPc.textContent}`;
                                 formTimeDisplay.textContent = `${oldTimeDisplay} → ${selectedTime}`;
@@ -572,7 +572,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             selectedTimeInput.value = selectedTime;
                         // 編集モードの場合は変更前と変更後を表示
                         if (window.editingReservation && formDateDisplay && formTimeDisplay) {
-                            const oldDateDisplay = formatDateForDisplay(window.editingReservation.date);
+                            const oldDateDisplay = formatDateToDisplayStr(window.editingReservation.date);
                             const oldTimeDisplay = window.editingReservation.time;
                             formDateDisplay.textContent = `${oldDateDisplay} → ${dateDisplay.textContent}`;
                             formTimeDisplay.textContent = `${oldTimeDisplay} → ${selectedTime}`;
@@ -632,7 +632,7 @@ document.addEventListener('DOMContentLoaded', () => {
  *
  **************************************************/
 // 日付を表示形式に変換する関数（YYYY-MM-DD → YYYY年MM月DD日）
-function formatDateForDisplay(dateStr) {
+function formatDateToDisplayStr(dateStr) {
     const [year, month, day] = dateStr.split('-').map(Number);
     return `${year}年${month}月${day}日`;
 }
@@ -779,7 +779,7 @@ function showTimeSelectionPanel(date) {
                     const formDateDisplay = document.querySelector('#form-date-display, #form-date-display-pc');
                     const formTimeDisplay = document.querySelector('#form-time-display, #form-time-display-pc');
                     if (formDateDisplay && formTimeDisplay) {
-                        const oldDateDisplay = formatDateForDisplay(window.editingReservation.date);
+                        const oldDateDisplay = formatDateToDisplayStr(window.editingReservation.date);
                         const oldTimeDisplay = window.editingReservation.time;
                         formDateDisplay.textContent = `${oldDateDisplay} → ${dateString}`;
                         formTimeDisplay.textContent = `${oldTimeDisplay} → ${window.editingReservation.time}`;

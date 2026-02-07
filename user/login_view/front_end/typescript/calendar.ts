@@ -13,6 +13,7 @@ interface Window {
     reservedDates?: ReservedDatesArray;
     reservedTimesByDate?: ReservedTimesByDate;
     editingReservation?: { date: string, time: string } | null;
+    messagePopUp?: (text: string, color?: string) => void;
 }
 
 // 日付を表示形式に変換する関数（YYYY-MM-DD → YYYY年MM月DD日）
@@ -231,7 +232,18 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 時間ボタンのクリックイベント
     document.querySelectorAll('.time-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function(this: HTMLButtonElement) {
+            // バリデーション処理
+            const days = Array.from(document.querySelectorAll('.calendar-day'));
+            const hasSelection = days.some(el => el.classList.contains('selected'));
+            const text = '日付を選択してください。';
+            const color = 'red';
+            
+            if (!hasSelection) {
+                messagePopUp(text, color);
+                return;
+            }
+
             if (this.classList.contains('past-time') || this.disabled) return;
             // 編集対象の時間ボタンのマークを解除
             document.querySelectorAll('.time-btn.editing-time').forEach((b: Element) => {
@@ -325,11 +337,27 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('cancel-reserve')?.addEventListener('click', closeModal);
     
 
-    function timeBtnValidation(){
-        console.log("a");
-        
+    let messageTimer: number;
+    function messagePopUp(text:string, color?:string){
+        const massageBox = document.querySelector('.massage-box');
+        const massageText = document.querySelector('.massage-text');
+        if(massageBox && massageText){
+            massageText.textContent = text
+            massageBox.classList.add('active');
+            if(color){
+                massageBox.classList.add(color);
+            }
+
+            messageTimer = setTimeout(() => {
+                massageBox.classList.remove('active');
+                setTimeout (() => {
+                    if(color){
+                        massageBox.classList.remove(color);
+                    }
+                }, 1000)
+            }, 2000);
+        } 
     }
-    
 
     // ウィンドウリサイズ時の処理
     window.addEventListener('resize', function() {
@@ -343,4 +371,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+
+    window.messagePopUp = messagePopUp;
 });

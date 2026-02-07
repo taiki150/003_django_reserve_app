@@ -7,6 +7,7 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from .forms import ReservationForm
+from django.db.models import Count
 from .models import (Reservation)
 
 
@@ -324,4 +325,31 @@ class DetailView(TemplateView):
         context['month_range'] = range(1, 13)
         context['day_range'] = range(1, 32)
 
+        return self.render_to_response(context)
+
+
+# ******************************** #
+#       予約統計の表示
+# ******************************** #
+class ReserveGraphView(TemplateView):
+    """予約統計の確認ページ（時間帯別の予約件数など）"""
+    template_name = 'reserve/reserve_graph.html'
+
+    @method_decorator(login_required)
+    def get(self, request, *args, **kwargs):
+        # 時間帯別の予約件数（10:00, 11:00, ... ごと）
+        time_counts = (
+            Reservation.objects
+            .values('time')
+            .annotate(count=Count('id'))
+            .order_by('time')
+        )
+        # テンプレート用に「10:00」形式のリストに変換
+        stats_by_time = [
+            {'time': r['time'].strftime('%H:%M'), 'count': r['count']}
+            for r in time_counts
+        ]
+        context = self.get_context_data(**kwargs)
+        context['stats_by_time'] = stats_by_time
+        context['total_count'] = sum(s['count'] for s in stats_by_time)
         return self.render_to_response(context)

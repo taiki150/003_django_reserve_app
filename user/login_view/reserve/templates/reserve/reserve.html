@@ -3,13 +3,18 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'reserve/css/calendar.css' %}">
 <link rel="stylesheet" href="{% static 'reserve/css/reserve.css' %}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 {% endblock %}
 {% block content %}
 <h3>予約画面</h3>
 <div class="main_contents">
 
     <div class="massage-box">
-        <p>日付を選択してください</p>
+        <p class="massage-text"></p>
+    </div>
+
+    <div class="dash_bord">
+        <a href="{% url 'reserve:reserve_graph' %}"><i class="bi bi-clipboard2-data"></i>予約統計の確認</a>
     </div>
 
     <div class="reserve-container">
@@ -19,8 +24,8 @@
                 display: none;
             }
         </style>
-
     </div>
+
 </div>
 
 <!-- モーダルオーバーレイ（スマホ版用） -->

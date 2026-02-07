@@ -3,8 +3,12 @@
     display: flex;
     justify-content: center;
     flex-direction: column;
-    gap: 20px;
     width: 100%;
+}
+
+/* 要素と要素の間のみ余白（カレンダー上にだけ余白、先頭の不要な隙間を防ぐ） */
+.reserve-container .calendar-wrapper {
+    margin-top: 20px;
 }
 
 .calendar-wrapper {
@@ -34,6 +38,7 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     padding: 0;
     width: 100%;
+    margin-top: 20px;
 }
 
 .reserve-detail-panel-detail {
@@ -433,7 +438,11 @@
     .reserve-container {
         flex-direction: row;
         align-items: flex-start;
-        gap: 30px;
+    }
+    
+    /* 要素と要素の間のみ余白（カレンダーと時間パネルの間だけ、左端の隙間なし） */
+    .reserve-container .reserve-detail-panel {
+        margin-left: 30px;
     }
     
     .calendar-wrapper {

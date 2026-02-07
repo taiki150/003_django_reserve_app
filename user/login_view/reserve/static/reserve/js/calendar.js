@@ -1,11 +1,17 @@
+"use strict";
 /******************************************************************************************
  *
  * typescriptを初めて実装しているため、コードが冗長になっている可能性があります。
  * 型定義もほとんど強制的に定義するように書いています。
  *
 ******************************************************************************************/
+// 日付を表示形式に変換する関数（YYYY-MM-DD → YYYY年MM月DD日）
+function formatDateForDisplay(dateStr) {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return `${year}年${month}月${day}日`;
+}
 document.addEventListener('DOMContentLoaded', function () {
-    var _a, _b;
+    var _a;
     const reservedDates = window.reservedDates || [];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -104,7 +110,11 @@ document.addEventListener('DOMContentLoaded', function () {
         // 日付文字列を生成（YYYY-MM-DD形式）
         const dateStr = `${selectedDate.year}-${String(selectedDate.month).padStart(2, '0')}-${String(selectedDate.day).padStart(2, '0')}`;
         // 選択された日付の予約済み時間を取得
-        const reservedTimes = ((_a = window.reservedTimesByDate) === null || _a === void 0 ? void 0 : _a[dateStr]) || [];
+        let reservedTimes = ((_a = window.reservedTimesByDate) === null || _a === void 0 ? void 0 : _a[dateStr]) || [];
+        // 編集モードの場合、編集対象の予約の時間を除外（編集可能にするため）
+        if (window.editingReservation && window.editingReservation.date === dateStr) {
+            reservedTimes = reservedTimes.filter(time => time !== window.editingReservation.time);
+        }
         // 今日の判定
         const isToday = selectedDateObj.getTime() === today.getTime();
         // 現在時刻の取得
@@ -197,8 +207,22 @@ document.addEventListener('DOMContentLoaded', function () {
     // 時間ボタンのクリックイベント
     document.querySelectorAll('.time-btn').forEach(btn => {
         btn.addEventListener('click', function () {
+            // バリデーション処理
+            const days = Array.from(document.querySelectorAll('.calendar-day'));
+            const hasSelection = days.some(el => el.classList.contains('selected'));
+            const text = '日付を選択してください。';
+            const color = 'red';
+            if (!hasSelection) {
+                messagePopUp(text, color);
+                return;
+            }
             if (this.classList.contains('past-time') || this.disabled)
                 return;
+            // 編集対象の時間ボタンのマークを解除
+            document.querySelectorAll('.time-btn.editing-time').forEach((b) => {
+                b.classList.remove('editing-time');
+                b.disabled = false;
+            });
             document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
             this.classList.add('selected');
             const selectedTime = this.getAttribute('data-time');
@@ -228,10 +252,19 @@ document.addEventListener('DOMContentLoaded', function () {
                             selectedDateInput.value = dateString;
                         if (selectedTimeInput)
                             selectedTimeInput.value = selectedTime;
-                        if (formDateDisplay)
-                            formDateDisplay.textContent = dateDisplayPc.textContent;
-                        if (formTimeDisplay)
-                            formTimeDisplay.textContent = selectedTime;
+                        // 編集モードの場合は変更前と変更後を表示
+                        if (window.editingReservation && formDateDisplay && formTimeDisplay) {
+                            const oldDateDisplay = formatDateForDisplay(window.editingReservation.date);
+                            const oldTimeDisplay = window.editingReservation.time;
+                            formDateDisplay.textContent = `${oldDateDisplay} → ${dateDisplayPc.textContent}`;
+                            formTimeDisplay.textContent = `${oldTimeDisplay} → ${selectedTime}`;
+                        }
+                        else {
+                            if (formDateDisplay)
+                                formDateDisplay.textContent = dateDisplayPc.textContent;
+                            if (formTimeDisplay)
+                                formTimeDisplay.textContent = selectedTime;
+                        }
                         if (formSection) {
                             formSection.style.display = 'block';
                         }
@@ -258,10 +291,19 @@ document.addEventListener('DOMContentLoaded', function () {
                             selectedDateInput.value = dateString;
                         if (selectedTimeInput)
                             selectedTimeInput.value = selectedTime;
-                        if (formDateDisplay)
-                            formDateDisplay.textContent = dateDisplay.textContent;
-                        if (formTimeDisplay)
-                            formTimeDisplay.textContent = selectedTime;
+                        // 編集モードの場合は変更前と変更後を表示
+                        if (window.editingReservation && formDateDisplay && formTimeDisplay) {
+                            const oldDateDisplay = formatDateForDisplay(window.editingReservation.date);
+                            const oldTimeDisplay = window.editingReservation.time;
+                            formDateDisplay.textContent = `${oldDateDisplay} → ${dateDisplay.textContent}`;
+                            formTimeDisplay.textContent = `${oldTimeDisplay} → ${selectedTime}`;
+                        }
+                        else {
+                            if (formDateDisplay)
+                                formDateDisplay.textContent = dateDisplay.textContent;
+                            if (formTimeDisplay)
+                                formTimeDisplay.textContent = selectedTime;
+                        }
                         if (formSection)
                             formSection.style.display = 'block';
                     }
@@ -271,20 +313,26 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     // キャンセルボタン
     (_a = document.getElementById('cancel-reserve')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', closeModal);
-    (_b = document.getElementById('cancel-reserve-pc')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', function () {
-        const formSectionPc = document.getElementById('reserve-form-section-pc');
-        if (formSectionPc)
-            formSectionPc.style.display = 'none';
-        document.querySelectorAll('.time-btn').forEach((btn) => {
-            btn.classList.remove('selected', 'past-time', 'reserved-time');
-            btn.disabled = false;
-            // 「※予約済」のspanを削除
-            const reservedSpan = btn.querySelector('.reserved-badge');
-            if (reservedSpan)
-                reservedSpan.remove();
-        });
-        document.querySelectorAll('.calendar-day.selected').forEach((el) => el.classList.remove('selected'));
-    });
+    let messageTimer;
+    function messagePopUp(text, color) {
+        const massageBox = document.querySelector('.massage-box');
+        const massageText = document.querySelector('.massage-text');
+        if (massageBox && massageText) {
+            massageText.textContent = text;
+            massageBox.classList.add('active');
+            if (color) {
+                massageBox.classList.add(color);
+            }
+            messageTimer = setTimeout(() => {
+                massageBox.classList.remove('active');
+                setTimeout(() => {
+                    if (color) {
+                        massageBox.classList.remove(color);
+                    }
+                }, 1000);
+            }, 2000);
+        }
+    }
     // ウィンドウリサイズ時の処理
     window.addEventListener('resize', function () {
         if (window.innerWidth >= 769) {
@@ -297,4 +345,5 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     });
+    window.messagePopUp = messagePopUp;
 });

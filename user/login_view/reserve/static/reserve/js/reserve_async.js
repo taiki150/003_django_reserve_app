@@ -426,7 +426,12 @@ const MyAsync = (actionName, task, dateStr, timeStr) => __awaiter(void 0, void 0
                     updateDisplayForDelete(responseData.date, responseData.time);
                 }
             }
-            alert(`${actionName}に成功しました！`);
+            if (window.messagePopUp) {
+                window.messagePopUp(`${actionName}に成功しました！`, 'blue');
+            }
+            else {
+                alert(`${actionName}に成功しました！`);
+            }
         }
         else {
             alert(`${actionName}に失敗しました: ${responseData.error || 'サーバーエラーが発生しました'}`);
@@ -524,9 +529,6 @@ const reapplySearchFilter = () => {
     }
 };
 window.reapplySearchFilter = reapplySearchFilter;
-// グローバルに公開
-window.deleteReservation = deleteReservation;
-window.MyAsync = MyAsync;
 // グローバルに公開
 window.deleteReservation = deleteReservation;
 window.MyAsync = MyAsync;

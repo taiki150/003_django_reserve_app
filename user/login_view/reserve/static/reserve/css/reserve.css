@@ -2,19 +2,21 @@
     position: relative;
 }
 
-.main_contents .massage-box {
+.massage-box {
     opacity: 0;
     width: 100%;
+    max-width: 980px;
     position: absolute;
-    width: 100%;
-    z-index: 10;
+    z-index: -10;
+    transform: translateX(-50%);
     border-radius: 12px;
     background: linear-gradient(135deg, #e8f7f6 0%, #f0faf9 100%);
     border: 1px solid #1eaaa2;
     box-shadow: 0 2px 12px #1eaaa21f;
     color: #2d6a64;
     transition: opacity 1s, transform 2s;
-    transform: translateY(-15px);
+    left: 50%;
+    transform: translate(-50% , -15px);
 }
 
 .massage-box.red {
@@ -31,7 +33,7 @@
     color: #2c5282;
 }
 
-.main_contents .massage-box p {
+.massage-box p {
     width: 100%;
     padding: 20px;
     display: flex;
@@ -43,8 +45,24 @@
     box-sizing: border-box;
 }
 
-.main_contents .massage-box.active{
-
+.massage-box.active{
+    z-index: 10;
     opacity: 1;
-    transform: translateY(0px);
+    transform: translate(-50% , 0px);
+}
+
+.dash_bord {
+    width: 100%;
+    max-width: 980px;
+    margin: auto;
+}
+
+.dash_bord a {
+    color: #0000ee;
+    text-decoration: none;
+}
+
+.dash_bord a:hover {
+    color: red;
+    text-decoration: underline;
 }

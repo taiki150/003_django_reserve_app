@@ -459,7 +459,7 @@ const MyAsync = async (actionName: string, task: () => Promise<Response>, dateSt
             // JSON解析に失敗した場合は空オブジェクトを使用
             responseData = {};
         }
-
+        
         if (response.ok) {
             if (actionName === '予約作成' && dateStr && timeStr) {
                 updateDisplay(dateStr, timeStr);
@@ -484,7 +484,11 @@ const MyAsync = async (actionName: string, task: () => Promise<Response>, dateSt
                     updateDisplayForDelete(responseData.date, responseData.time);
                 }
             }
-            alert(`${actionName}に成功しました！`);
+            if (window.messagePopUp) {
+                window.messagePopUp(`${actionName}に成功しました！`, 'blue');
+            } else {
+                alert(`${actionName}に成功しました！`);
+            }
         } else {
             alert(`${actionName}に失敗しました: ${responseData.error || 'サーバーエラーが発生しました'}`);
         }
@@ -601,10 +605,6 @@ const reapplySearchFilter = (): void => {
     }
 };
 (window as any).reapplySearchFilter = reapplySearchFilter;
-
-// グローバルに公開
-(window as any).deleteReservation = deleteReservation;
-(window as any).MyAsync = MyAsync;
 
 // グローバルに公開
 (window as any).deleteReservation = deleteReservation;
