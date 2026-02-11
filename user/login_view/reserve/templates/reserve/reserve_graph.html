@@ -2,12 +2,24 @@
 {% load static %}
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-<link rel="stylesheet" href="{% static 'reserve/css/calendar.css' %}">
-<link rel="stylesheet" href="{% static 'reserve/css/detail.css' %}">
+<link rel="stylesheet" href="{% static 'reserve/css/reserve_graph.css' %}">
 <script src="{% static 'reserve/js/calendar_sub.js' %}"></script>
-
-
 {% endblock %}
 {% block content %}
 
+<h3>混雑状況</h3>
+<div class="loade_view">
+    <div class="loader">Loading...</div>
+</div>
+
+<div class="graph">
+    <div class="nav">
+        <h4>絞り込み</h4>
+        <button class="period_btn active">全て</button>
+        <button class="period_btn">１か月</button>
+        <button class="period_btn">３か月</button>
+    </div>
+</div>
+
+<script src="{% static 'reserve/js/graph.js' %}"></script>
 {% endblock %}

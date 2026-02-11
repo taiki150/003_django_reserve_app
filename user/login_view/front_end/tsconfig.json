@@ -14,7 +14,8 @@
     "typescript/reserve_async.ts",
     "typescript/detail.ts",
     "typescript/calendar.ts",
-    "typescript/calendar_sub.ts"
+    "typescript/calendar_sub.ts",
+    "typescript/graph.ts"
   ]
 }
 

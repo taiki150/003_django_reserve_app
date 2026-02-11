@@ -52,17 +52,20 @@
 }
 
 .dash_bord {
-    width: 100%;
+    width: 120px;
     max-width: 980px;
-    margin: auto;
+    margin-left: auto;
+    box-sizing: border-box;
 }
 
 .dash_bord a {
-    color: #0000ee;
+    font-size: 14px;
+    color: #7d7de9;
     text-decoration: none;
+    transition: 0.2s;
 }
 
 .dash_bord a:hover {
-    color: red;
+    color: #f79a9a;
     text-decoration: underline;
 }
