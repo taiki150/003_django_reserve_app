@@ -382,7 +382,8 @@ const updateDisplaySearch = (result: ReserveSearchData) => {
     
     
     const { startDate, endDate, times } = result;
-    let isDate = startDate == undefined && endDate == undefined;
+    // 日付で絞り込んでいない（両方 undefined）
+    const isDate = startDate == undefined && endDate == undefined;
 
     listBoxes.forEach((box) => {
         // タブで非表示の箱はインラインを外し、表示制御はCSSに任せる（現在タブで過去が表示されるのを防ぐ）
@@ -395,34 +396,33 @@ const updateDisplaySearch = (result: ReserveSearchData) => {
         const boxDate = box.dataset.date;
         // boxDateが検索した日付の期間内であればtrue
         const inDate = boxDate ? (boxDate >= startDate && boxDate <= endDate) : false;
-        const boxClassName:string = box.className;
+        const boxClassName: string = box.className;
 
         // 過去タブであれば過去分の情報のみ表示切り替え
-        if(activeTabData && activeTabData === "past"){
-            if(boxClassName != 'list-box-container tab-visible'){
+        if (activeTabData && activeTabData === "past") {
+            if (boxClassName != 'list-box-container tab-visible') {
                 return;
             }
         }
-        
-        if(boxDate){
-            // 日付が範囲外なら非表示にして次の日付Boxへ
-            if(!inDate || isDate){
+
+        if (boxDate) {
+            // 日付で絞り込みあり かつ このboxが範囲外 → 非表示にして時間フィルタは行わない
+            if (!isDate && !inDate) {
                 box.style.display = 'none';
+                return;
             }
-            
 
             const timeItems = box.querySelectorAll<HTMLLIElement>('.time-box');
             let flgTimeNoCount = false;
 
             timeItems.forEach((timeItem) => {
-                // <li data-time="">から時間を取得
                 const timeText = timeItem.dataset.time;
                 const isTimeMatch = times.length === 0 || (timeText && times.includes(timeText));
 
-                if(isTimeMatch){
+                if (isTimeMatch) {
                     timeItem.style.display = "block";
                     flgTimeNoCount = true;
-                }else{
+                } else {
                     timeItem.style.display = "none";
                 }
             });
@@ -490,11 +490,21 @@ const MyAsync = async (actionName: string, task: () => Promise<Response>, dateSt
                 alert(`${actionName}に成功しました！`);
             }
         } else {
-            alert(`${actionName}に失敗しました: ${responseData.error || 'サーバーエラーが発生しました'}`);
+            const errorMsg = responseData.error || 'サーバーエラーが発生しました';
+            if (window.messagePopUp) {
+                window.messagePopUp(errorMsg, 'red');
+            } else {
+                alert(`${actionName}に失敗しました: ${errorMsg}`);
+            }
         }
         
-    }catch(error){
-        alert(`${actionName}に失敗しました: ${error instanceof Error ? error.message : '予期しないエラーが発生しました'}`);
+    } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : '予期しないエラーが発生しました';
+        if (window.messagePopUp) {
+            window.messagePopUp(`${actionName}に失敗しました: ${errorMsg}`, 'red');
+        } else {
+            alert(`${actionName}に失敗しました: ${errorMsg}`);
+        }
     }
 }
 
@@ -513,6 +523,9 @@ let searchData: {
     times: []
 };
 
+// 二重送信防止用フラグ
+let isReserveSubmitting = false;
+
 document.addEventListener('click', async (e) => {
     const target = e.target as HTMLLabelElement | HTMLButtonElement;
     // .submit-btnがクリックされた場合のみ処理を実行
@@ -520,6 +533,14 @@ document.addEventListener('click', async (e) => {
         e.preventDefault();
         e.stopPropagation();
         
+        if (isReserveSubmitting) {
+            return;
+        }
+        isReserveSubmitting = true;
+        const submitBtn = target instanceof HTMLButtonElement ? target : null;
+        if (submitBtn) submitBtn.disabled = true;
+        
+        try {
         // クリックされたボタンが含まれるformを取得
         const form = target.closest('form') as HTMLFormElement;
         if (!form) return;
@@ -590,10 +611,14 @@ document.addEventListener('click', async (e) => {
             // 新規作成モード：予約を作成
             await MyAsync('予約作成', () => createReservation(dateValue, timeValue), dateValue, timeValue);
         }
-    }else if(target.classList.contains('label') || target.classList.contains('applyBtn')){
+        } finally {
+            isReserveSubmitting = false;
+            if (submitBtn) submitBtn.disabled = false;
+        }
+    } else if (target.classList.contains('label') || target.classList.contains('applyBtn')) {
 
-        searchReservation(target); 
-    }else if(target.classList.contains('sort-old') || target.classList.contains('sort-new')){
+        searchReservation(target);
+    } else if (target.classList.contains('sort-old') || target.classList.contains('sort-new')) {
         sortReservation(target);
     }
 });

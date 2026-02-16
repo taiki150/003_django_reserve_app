@@ -30,4 +30,4 @@ const startLoading = () => __awaiter(void 0, void 0, void 0, function* () {
 if (loadeBox) {
     startLoading();
 }
-/*************** △△△ ロードアニメーション △△△ *****************/ 
+/*************** △△△ ロードアニメーション △△△ *****************/

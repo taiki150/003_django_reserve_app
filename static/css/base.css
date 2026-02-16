@@ -127,6 +127,12 @@ nav {
     visibility: visible;
 }
 
+.main_contents h3 {
+    color: #333;
+    border-left: 10px solid #1eaaa2;
+    padding: 5px 15px;
+}
+
 /* メディアクエリ: SP版（768px以下） */
 @media (max-width: 768px) {
     .pc-nav {

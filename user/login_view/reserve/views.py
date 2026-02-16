@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from .forms import ReservationForm
 from django.db.models import Count
+from django.db import IntegrityError
 from .models import (Reservation)
 
 
@@ -31,6 +32,19 @@ class APIReserveCreateView(View):
             if not selected_date or not selected_time:
                 return JsonResponse({'success': False, 'error': '日付と時間が必須です'}, status=400)
             
+            # 二重予約防止：同じユーザーが同じ日時で既に予約していないかチェック
+            try:
+                date_obj = datetime.strptime(selected_date, '%Y-%m-%d').date()
+                time_obj = datetime.strptime(selected_time, '%H:%M').time()
+            except ValueError:
+                return JsonResponse({'success': False, 'error': '無効な日付または時間の形式です'}, status=400)
+            if Reservation.objects.filter(user=request.user, date=date_obj, time=time_obj).exists():
+                return JsonResponse({
+                    'success': False,
+                    'error': 'この日時は既に予約済みです。二重予約はできません。',
+                    'error_code': 'duplicate_reservation'
+                }, status=400)
+            
             # フォームデータを作成
             form_data = {
                 'date': selected_date,
@@ -41,7 +55,14 @@ class APIReserveCreateView(View):
             if form.is_valid():
                 reservation = form.save(commit=False)
                 reservation.user = request.user
-                reservation.save()
+                try:
+                    reservation.save()
+                except IntegrityError:
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'この日時は既に予約済みです。二重予約はできません。',
+                        'error_code': 'duplicate_reservation'
+                    }, status=400)
                 return JsonResponse({'success': True, 'message': '予約が作成されました'}, status=200)
             else:
                 errors = form.errors.as_json()
@@ -94,6 +115,21 @@ class APIReserveUpdateView(View):
                 print(f"エラー: 無効な日付または時間の形式です - {e}")
                 return JsonResponse({'success': False, 'error': '無効な日付または時間の形式です'}, status=400)
             
+            # 新しい日付・時間をオブジェクトに変換
+            try:
+                new_date_obj = datetime.strptime(new_date, '%Y-%m-%d').date()
+                new_time_obj = datetime.strptime(new_time, '%H:%M').time()
+            except ValueError:
+                return JsonResponse({'success': False, 'error': '無効な日付または時間の形式です'}, status=400)
+            
+            # 二重予約防止：変更先の日時が既に同一ユーザーで予約されていないか（自分以外の予約＝他枠との重複）
+            if Reservation.objects.filter(user=request.user, date=new_date_obj, time=new_time_obj).exclude(pk=reservation.pk).exists():
+                return JsonResponse({
+                    'success': False,
+                    'error': '変更先の日時は既に予約済みです。二重予約はできません。',
+                    'error_code': 'duplicate_reservation'
+                }, status=400)
+            
             # 新しい日付・時間でフォームデータを作成
             form_data = {
                 'date': new_date,
@@ -108,7 +144,14 @@ class APIReserveUpdateView(View):
                 # 新しい予約を作成
                 new_reservation = form.save(commit=False)
                 new_reservation.user = request.user
-                new_reservation.save()
+                try:
+                    new_reservation.save()
+                except IntegrityError:
+                    return JsonResponse({
+                        'success': False,
+                        'error': '変更先の日時は既に予約済みです。二重予約はできません。',
+                        'error_code': 'duplicate_reservation'
+                    }, status=400)
                 
                 return JsonResponse({
                     'success': True, 

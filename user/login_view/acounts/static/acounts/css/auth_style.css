@@ -38,7 +38,8 @@ form label {
     margin-right: 15px;
 }
 
-form #id_password, form #id_username, form #id_email{
+form #id_password, form #id_username, form #id_email,
+form #id_new_password, form #id_new_password_confirm {
     width: auto;
     flex: 1;
     padding: 10px;
@@ -87,7 +88,8 @@ form input[type="submit"]:hover {
         box-sizing: border-box;
     }
 
-    form #id_password, form #id_username, form #id_email{
+    form #id_password, form #id_username, form #id_email,
+    form #id_new_password, form #id_new_password_confirm {
         width: 70%;
     }
 
@@ -103,9 +105,10 @@ form input[type="submit"]:hover {
         background-color: #fff;
     }
 
-    form #id_password, form #id_username, form #id_email{
+    form #id_password, form #id_username, form #id_email,
+    form #id_new_password, form #id_new_password_confirm {
         width: 100%;
-    } 
+    }
 
     form input[type="submit"], form input[type="submit"]:hover {
         background-color: #1eaaa2;

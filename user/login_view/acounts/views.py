@@ -4,8 +4,11 @@ from django.views.generic import(
 )
 from django.urls import reverse_lazy
 from django.contrib.auth import authenticate, login, logout
-from .forms import RegistForm, UserLoginForm, UserLoginForm2
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
+from .forms import RegistForm, UserLoginForm, UserLoginForm2, UserUpdateForm
 from django.contrib.auth.views import LoginView, LogoutView
+from .models import User
 
 class HomeView(TemplateView):
     template_name = 'home.html'
@@ -61,3 +64,25 @@ class UserLogoutView2(LogoutView):
     next_page = reverse_lazy('acounts:home')
     http_method_names = ['get', 'post']
     template_name = 'acounts/user_logout.html'
+
+
+class UserUpdateView(LoginRequiredMixin, View):
+    """ユーザー情報の確認・編集"""
+    template_name = 'user_update.html'
+    login_url = reverse_lazy('acounts:user_login2')
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        form = UserUpdateForm(instance=user)
+        return render(request, self.template_name, {'form': form, 'profile_user': user})
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        form = UserUpdateForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'ユーザー情報を更新しました。')
+            return redirect('acounts:user_update')
+        return render(request, self.template_name, {
+            'form': form, 'profile_user': user, 'show_edit': True
+        })

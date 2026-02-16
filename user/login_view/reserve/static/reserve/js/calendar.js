@@ -319,6 +319,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const massageText = document.querySelector('.massage-text');
         if (massageBox && massageText) {
             massageText.textContent = text;
+            massageBox.style.zIndex = "10";
             massageBox.classList.add('active');
             if (color) {
                 massageBox.classList.add(color);
@@ -328,6 +329,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 setTimeout(() => {
                     if (color) {
                         massageBox.classList.remove(color);
+                        massageBox.style.zIndex = "-10";
+                        massageBox.style.display = "none";
                     }
                 }, 1000);
             }, 2000);

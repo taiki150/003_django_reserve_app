@@ -340,7 +340,8 @@ const updateDisplaySearch = (result) => {
     // 現在・過去のタブの情報取得
     const activeTabData = activeTab.dataset.tab;
     const { startDate, endDate, times } = result;
-    let isDate = startDate == undefined && endDate == undefined;
+    // 日付で絞り込んでいない（両方 undefined）
+    const isDate = startDate == undefined && endDate == undefined;
     listBoxes.forEach((box) => {
         // タブで非表示の箱はインラインを外し、表示制御はCSSに任せる（現在タブで過去が表示されるのを防ぐ）
         if (!box.classList.contains('tab-visible')) {
@@ -359,14 +360,14 @@ const updateDisplaySearch = (result) => {
             }
         }
         if (boxDate) {
-            // 日付が範囲外なら非表示にして次の日付Boxへ
-            if (!inDate || isDate) {
+            // 日付で絞り込みあり かつ このboxが範囲外 → 非表示にして時間フィルタは行わない
+            if (!isDate && !inDate) {
                 box.style.display = 'none';
+                return;
             }
             const timeItems = box.querySelectorAll('.time-box');
             let flgTimeNoCount = false;
             timeItems.forEach((timeItem) => {
-                // <li data-time="">から時間を取得
                 const timeText = timeItem.dataset.time;
                 const isTimeMatch = times.length === 0 || (timeText && times.includes(timeText));
                 if (isTimeMatch) {
@@ -434,11 +435,23 @@ const MyAsync = (actionName, task, dateStr, timeStr) => __awaiter(void 0, void 0
             }
         }
         else {
-            alert(`${actionName}に失敗しました: ${responseData.error || 'サーバーエラーが発生しました'}`);
+            const errorMsg = responseData.error || 'サーバーエラーが発生しました';
+            if (window.messagePopUp) {
+                window.messagePopUp(errorMsg, 'red');
+            }
+            else {
+                alert(`${actionName}に失敗しました: ${errorMsg}`);
+            }
         }
     }
     catch (error) {
-        alert(`${actionName}に失敗しました: ${error instanceof Error ? error.message : '予期しないエラーが発生しました'}`);
+        const errorMsg = error instanceof Error ? error.message : '予期しないエラーが発生しました';
+        if (window.messagePopUp) {
+            window.messagePopUp(`${actionName}に失敗しました: ${errorMsg}`, 'red');
+        }
+        else {
+            alert(`${actionName}に失敗しました: ${errorMsg}`);
+        }
     }
 });
 // 予約登録のボタンクリックで非同期処理を実行（イベント委譲を使用）
@@ -451,69 +464,85 @@ let searchData = {
     end_date: undefined,
     times: []
 };
+// 二重送信防止用フラグ
+let isReserveSubmitting = false;
 document.addEventListener('click', (e) => __awaiter(void 0, void 0, void 0, function* () {
     const target = e.target;
     // .submit-btnがクリックされた場合のみ処理を実行
     if (target.classList.contains('submit-btn')) {
         e.preventDefault();
         e.stopPropagation();
-        // クリックされたボタンが含まれるformを取得
-        const form = target.closest('form');
-        if (!form)
-            return;
-        // IDではなく名前（name属性）で探すと、そのフォーム専用の入力欄が確実に取れます
-        // form内のhidden inputから日付と時間を取得
-        // スマホ版: selected-date-input, selected-time-input
-        // PC版: selected-date-input-pc, selected-time-input-pc
-        const dateInput = form.querySelector('[name="selected_date"]');
-        const timeInput = form.querySelector('[name="selected_time"]');
-        if (!dateInput || !timeInput) {
-            alert('日付または時間が選択されていません');
+        if (isReserveSubmitting) {
             return;
         }
-        const dateValue = dateInput.value;
-        const timeValue = timeInput.value;
-        if (!dateValue || !timeValue) {
-            alert('日付または時間が選択されていません');
-            return;
-        }
-        // 編集モードかどうかをチェック
-        if (window.editingReservation) {
-            // 編集モード：予約を更新
-            const oldDate = window.editingReservation.date;
-            const oldTime = window.editingReservation.time;
-            // 日付または時間が変更されているかチェック
-            const isDateChanged = oldDate !== dateValue;
-            const isTimeChanged = oldTime !== timeValue;
-            // 変更がある場合のみ確認ダイアログを表示
-            if (isDateChanged || isTimeChanged) {
-                // 日付を表示形式に変換（YYYY-MM-DD → M月D日）
-                const formatDate = (dateStr) => {
-                    const [year, month, day] = dateStr.split('-').map(Number);
-                    return `${month}月${day}日`;
-                };
-                // 時間を表示形式に変換（HH:MM → H時）
-                const formatTime = (timeStr) => {
-                    const [hour] = timeStr.split(':').map(Number);
-                    return `${hour}時`;
-                };
-                const oldDateDisplay = formatDate(oldDate);
-                const oldTimeDisplay = formatTime(oldTime);
-                const newDateDisplay = formatDate(dateValue);
-                const newTimeDisplay = formatTime(timeValue);
-                const confirmMessage = `${oldDateDisplay}${oldTimeDisplay}を${newDateDisplay}${newTimeDisplay}に変更してもよろしいですか？`;
-                if (!confirm(confirmMessage)) {
-                    return; // キャンセルされた場合は処理を中断
-                }
+        isReserveSubmitting = true;
+        const submitBtn = target instanceof HTMLButtonElement ? target : null;
+        if (submitBtn)
+            submitBtn.disabled = true;
+        try {
+            // クリックされたボタンが含まれるformを取得
+            const form = target.closest('form');
+            if (!form)
+                return;
+            // IDではなく名前（name属性）で探すと、そのフォーム専用の入力欄が確実に取れます
+            // form内のhidden inputから日付と時間を取得
+            // スマホ版: selected-date-input, selected-time-input
+            // PC版: selected-date-input-pc, selected-time-input-pc
+            const dateInput = form.querySelector('[name="selected_date"]');
+            const timeInput = form.querySelector('[name="selected_time"]');
+            if (!dateInput || !timeInput) {
+                alert('日付または時間が選択されていません');
+                return;
             }
-            yield MyAsync('予約更新', () => updateReservation(oldDate, oldTime, dateValue, timeValue));
-            // 編集モードをリセット（カレンダーは開いたまま）
-            // 編集が完了した後もカレンダーを開いたままにするため、ここではリセットしない
-            // カレンダーを閉じる時にリセットされる
+            const dateValue = dateInput.value;
+            const timeValue = timeInput.value;
+            if (!dateValue || !timeValue) {
+                alert('日付または時間が選択されていません');
+                return;
+            }
+            // 編集モードかどうかをチェック
+            if (window.editingReservation) {
+                // 編集モード：予約を更新
+                const oldDate = window.editingReservation.date;
+                const oldTime = window.editingReservation.time;
+                // 日付または時間が変更されているかチェック
+                const isDateChanged = oldDate !== dateValue;
+                const isTimeChanged = oldTime !== timeValue;
+                // 変更がある場合のみ確認ダイアログを表示
+                if (isDateChanged || isTimeChanged) {
+                    // 日付を表示形式に変換（YYYY-MM-DD → M月D日）
+                    const formatDate = (dateStr) => {
+                        const [year, month, day] = dateStr.split('-').map(Number);
+                        return `${month}月${day}日`;
+                    };
+                    // 時間を表示形式に変換（HH:MM → H時）
+                    const formatTime = (timeStr) => {
+                        const [hour] = timeStr.split(':').map(Number);
+                        return `${hour}時`;
+                    };
+                    const oldDateDisplay = formatDate(oldDate);
+                    const oldTimeDisplay = formatTime(oldTime);
+                    const newDateDisplay = formatDate(dateValue);
+                    const newTimeDisplay = formatTime(timeValue);
+                    const confirmMessage = `${oldDateDisplay}${oldTimeDisplay}を${newDateDisplay}${newTimeDisplay}に変更してもよろしいですか？`;
+                    if (!confirm(confirmMessage)) {
+                        return; // キャンセルされた場合は処理を中断
+                    }
+                }
+                yield MyAsync('予約更新', () => updateReservation(oldDate, oldTime, dateValue, timeValue));
+                // 編集モードをリセット（カレンダーは開いたまま）
+                // 編集が完了した後もカレンダーを開いたままにするため、ここではリセットしない
+                // カレンダーを閉じる時にリセットされる
+            }
+            else {
+                // 新規作成モード：予約を作成
+                yield MyAsync('予約作成', () => createReservation(dateValue, timeValue), dateValue, timeValue);
+            }
         }
-        else {
-            // 新規作成モード：予約を作成
-            yield MyAsync('予約作成', () => createReservation(dateValue, timeValue), dateValue, timeValue);
+        finally {
+            isReserveSubmitting = false;
+            if (submitBtn)
+                submitBtn.disabled = false;
         }
     }
     else if (target.classList.contains('label') || target.classList.contains('applyBtn')) {

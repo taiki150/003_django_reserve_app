@@ -7,7 +7,6 @@
     width: 100%;
     max-width: 980px;
     position: absolute;
-    z-index: -10;
     transform: translateX(-50%);
     border-radius: 12px;
     background: linear-gradient(135deg, #e8f7f6 0%, #f0faf9 100%);
@@ -43,15 +42,17 @@
     font-weight: 700;
     overflow: hidden;
     box-sizing: border-box;
+    z-index: -10;
 }
 
-.massage-box.active{
-    z-index: 10;
+.massage-box.active {
+    /* z-index: 10; */
     opacity: 1;
     transform: translate(-50% , 0px);
 }
 
 .dash_bord {
+    z-index: 200;
     width: 120px;
     max-width: 980px;
     margin-left: auto;

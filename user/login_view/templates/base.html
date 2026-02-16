@@ -19,6 +19,7 @@
                 {% if user.is_authenticated %}
                 <a href="{% url 'reserve:reserve' %}">予約画面</a>
                 <a href="{% url 'reserve:detail' %}">予約一覧</a>
+                <a href="{% url 'acounts:user_update' %}">ユーザー情報</a>
                 <a href="{% url 'acounts:user_logout2' %}">ログアウト</a>
                 {% else %}
                 <a href="{% url 'acounts:user_login2' %}">ログイン</a>
@@ -39,6 +40,7 @@
                     {% if user.is_authenticated %}
                     <a href="{% url 'reserve:reserve' %}">予約画面</a>
                     <a href="{% url 'reserve:detail' %}">予約一覧</a>
+                    <a href="{% url 'acounts:user_update' %}">ユーザー情報</a>
                     <a href="{% url 'acounts:user_logout2' %}">ログアウト</a>
                     {% else %}
                     <a href="{% url 'acounts:user_login2' %}">ログイン</a>

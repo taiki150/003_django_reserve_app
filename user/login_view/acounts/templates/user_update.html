@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'acounts/css/user_update.css' %}">
+{% endblock %}
+{% block content %}
+<div class="massage-box">
+    <p class="massage-text"></p>
+</div>
+
+{% for message in messages %}
+{% if forloop.first %}
+<script>window.USER_UPDATE_FLASH = { text: "{{ message|escapejs }}", color: "blue" };</script>
+{% endif %}
+{% endfor %}
+
+<h3>ユーザー情報</h3>
+
+<!-- 表示モード：ユーザー情報の確認 -->
+<div id="user-info-view" class="user-update-section">
+    <div class="user-info-card">
+        <dl class="user-info-list">
+            <dt>名前</dt>
+            <dd>{{ profile_user.username }}</dd>
+            <dt>メールアドレス</dt>
+            <dd>{{ profile_user.email }}</dd>
+        </dl>
+        <button type="button" id="btn-edit" class="btn-edit">編集</button>
+    </div>
+</div>
+
+<!-- 編集モード：フォーム -->
+<div id="user-info-edit" class="user-update-section" style="display: none;">
+    <form method="post" class="user-update-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="form-buttons">
+            <button type="submit" class="btn-submit">保存</button>
+            <button type="button" id="btn-cancel" class="btn-cancel">キャンセル</button>
+        </div>
+    </form>
+</div>
+
+<script src="{% static 'acounts/js/user_update.js' %}"></script>
+{% endblock %}

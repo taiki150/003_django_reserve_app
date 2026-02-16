@@ -339,10 +339,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let messageTimer: number;
     function messagePopUp(text:string, color?:string){
-        const massageBox = document.querySelector('.massage-box');
+        const massageBox = document.querySelector('.massage-box') as HTMLElement | null;
         const massageText = document.querySelector('.massage-text');
         if(massageBox && massageText){
             massageText.textContent = text
+            massageBox.style.zIndex = "10";
             massageBox.classList.add('active');
             if(color){
                 massageBox.classList.add(color);
@@ -353,8 +354,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTimeout (() => {
                     if(color){
                         massageBox.classList.remove(color);
+                        massageBox.style.zIndex = "-10";
+                        massageBox.style.display = "none";
                     }
-                }, 1000)
+                }, 1000);
             }, 2000);
         } 
     }

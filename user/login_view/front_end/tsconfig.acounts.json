@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2015",
+    "lib": ["ES2017", "DOM"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "../acounts/static/acounts/js",
+    "rootDir": "typescript",
+    "module": "none"
+  },
+  "files": ["typescript/user_update.ts"]
+}

@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (
     RegistUserView, HomeView, UserLoginView, UserLogoutView,
-    UserLoginView2, UserLogoutView2,
+    UserLoginView2, UserLogoutView2, UserUpdateView,
 )
 
 app_name = 'acounts'
@@ -13,4 +13,5 @@ urlpatterns = [
     path('user_logout/', UserLogoutView.as_view(), name='user_logout'),
     path('user_login2/', UserLoginView2.as_view(), name='user_login2'),
     path('user_logout2/', UserLogoutView2.as_view(), name='user_logout2'),
+    path('user_update/', UserUpdateView.as_view(), name='user_update'),
 ]
