@@ -34,7 +34,6 @@
 
 .massage-box p {
     width: 100%;
-    padding: 20px;
     display: flex;
     justify-content: start;
     align-items: center;
@@ -43,6 +42,9 @@
     overflow: hidden;
     box-sizing: border-box;
     z-index: -10;
+    padding: 0;
+    line-height: 60px;
+    padding-left: 20px;
 }
 
 .massage-box.active {

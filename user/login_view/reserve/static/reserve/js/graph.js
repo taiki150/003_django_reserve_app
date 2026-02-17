@@ -31,3 +31,112 @@ if (loadeBox) {
     startLoading();
 }
 /*************** △△△ ロードアニメーション △△△ *****************/
+/*************** ▽▽▽ navの表示/非表示切り替え ▽▽▽ *****************/
+const navToggleBtn = document.querySelector('.nav_head button');
+const periodBtn = document.querySelectorAll('.period_btn');
+if (navToggleBtn) {
+    navToggleBtn.addEventListener('click', () => {
+        navToggleBtn.classList.toggle('close');
+        periodBtn.forEach((btn) => {
+            btn.classList.toggle('close');
+        });
+    });
+}
+const DAYS = ['月', '火', '水', '木', '金', '土', '日'];
+const TIMES = ['10:00', '11:00', '12:00', '13:00', '14:00'];
+function createMockData() {
+    const data = [];
+    for (let d = 0; d < 7; d++) {
+        for (let t = 0; t < 5; t++) {
+            data.push({ x: d, y: t, v: Math.floor(Math.random() * 21) });
+        }
+    }
+    return data;
+}
+function initHeatmap() {
+    const heatmapCtx = document.getElementById('heatmapChart');
+    if (!heatmapCtx)
+        return;
+    const heatmapData = createMockData();
+    const maxVal = 20;
+    new Chart(heatmapCtx, {
+        type: 'matrix',
+        data: {
+            datasets: [{
+                    label: '予約件数',
+                    data: heatmapData,
+                    borderWidth: 1,
+                    borderColor: 'rgba(255,255,255,0.8)',
+                    backgroundColor: (ctx) => {
+                        var _a, _b;
+                        const v = (_b = (_a = ctx.raw) === null || _a === void 0 ? void 0 : _a.v) !== null && _b !== void 0 ? _b : 0;
+                        const alpha = 0.15 + (v / maxVal) * 0.85;
+                        return `rgba(30, 170, 162, ${alpha})`;
+                    },
+                    width: ({ chart }) => { var _a, _b; return (((_b = (_a = chart.chartArea) === null || _a === void 0 ? void 0 : _a.width) !== null && _b !== void 0 ? _b : 300) / 7) - 1; },
+                    height: ({ chart }) => { var _a, _b; return (((_b = (_a = chart.chartArea) === null || _a === void 0 ? void 0 : _a.height) !== null && _b !== void 0 ? _b : 200) / 5) - 1; },
+                }],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            aspectRatio: 1.2,
+            layout: {
+                padding: { left: 0, right: 0, top: 0, bottom: 0 },
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        title: (items) => {
+                            var _a, _b, _c;
+                            const r = (_a = items[0]) === null || _a === void 0 ? void 0 : _a.raw;
+                            if (r == null)
+                                return '';
+                            return `${DAYS[(_b = r.x) !== null && _b !== void 0 ? _b : 0]} ${TIMES[(_c = r.y) !== null && _c !== void 0 ? _c : 0]}`;
+                        },
+                        label: (ctx) => {
+                            var _a, _b;
+                            const v = (_b = (_a = ctx.raw) === null || _a === void 0 ? void 0 : _a.v) !== null && _b !== void 0 ? _b : 0;
+                            return `予約件数: ${v}件`;
+                        },
+                    },
+                },
+                legend: { display: false },
+            },
+            scales: {
+                x: {
+                    min: -0.5,
+                    max: 6.5,
+                    display: true,
+                    offset: false,
+                    grid: { offset: false },
+                    ticks: {
+                        stepSize: 1,
+                        callback: (_, i) => { var _a; return (_a = DAYS[i]) !== null && _a !== void 0 ? _a : ''; },
+                    },
+                },
+                y: {
+                    min: -0.5,
+                    max: 4.5,
+                    reverse: true,
+                    display: true,
+                    offset: false,
+                    grid: { offset: false },
+                    ticks: {
+                        stepSize: 1,
+                        callback: (_, i) => { var _a; return (_a = TIMES[i]) !== null && _a !== void 0 ? _a : ''; },
+                    },
+                },
+            },
+        },
+    });
+}
+if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initHeatmap);
+    }
+    else {
+        initHeatmap();
+    }
+}
+/*************** △△△ 予約集中ヒートマップ △△△ *****************/

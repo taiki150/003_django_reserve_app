@@ -85,33 +85,41 @@
     margin: auto;
     display: flex;
     justify-content: space-between;
-    padding: 24px;
+    padding: 14px;
+    padding-left: 20px;
     box-sizing: border-box;
-    border: 2px solid #1eaaa2;
+    /* border: 2px solid #1eaaa2; */
     border-radius: 20px;
+    transition: 
+    ease max-height 0.7s;
 }
 
 .nav_head {
   width: 100%;
-  position: relative;   
+  position: relative;
+  border-bottom: 2px solid #1eaaa2;
 }
 
 .nav h4 {
     width: 100%;
     margin-bottom: 0;
     line-height: 50px;
+    padding-left: 20px;
 }
 
 .nav_head .opne {
   position: absolute;
-  max-width: 30px;
-  max-height: 30px;
+  box-sizing: content-box;
+  border-radius: 100%;
+  height: 30px;
+  width: 30px;
   background-color: #FFF;
   border: 0;
   margin: 0;
   padding: 0;
-  top: 0;
-  right: 10%;
+  top: 8px;
+  right: 20px;
+  border: 2px solid #1eaaa2;
 }
 
 .nav_head .opne span {
@@ -120,32 +128,45 @@
   position: absolute;
 }
 .nav_head .opne span:first-child {
-  width: 100%;
-  height: 5px;
+  width: 22px;
+  height: 3px;
 
-  top: 12.5px;
+  top: 13.5px;
+  left: 4px;
 }
 
 .nav_head .opne span:last-child {
-  height: 30px;
-  width: 5px;
-  left: 12.5px;
+  height: 22px;
+  width: 3px;
+  left: 13.5px;
+  top: 4px;
+  transition: 
+    transform 0.7s
+  ;
 }
 
 .nav_head .close span:last-child {
-  height: 30px;
-  width: 5px;
-  left: 12.5px;
+  transform: rotate(90deg);
 }
 
 .nav .period_btn {
     min-width: 200px;
+    height: 48px;
     line-height: 44px;
     border: 2px solid #1eaaa2;
     border-radius: 25px;
     background-color: #FFF;
-    transition: 0.3s;
+    transition:
+      height 0.7s ease-in-out,
+      opacity 0.7s ease-in-out,
+      margin 0.7s ease-in-out,
+      border-width 0.7s ease-in-out,
+      border-color 0.7s ease-in-out;
+    overflow: hidden;
     color: #666;
+    padding: 0;
+    margin-top: 20px;
+    box-sizing: border-box;
 }
 
 .nav .period_btn:hover {
@@ -159,6 +180,83 @@
     border: 2px solid #999;
     pointer-events: none;
 }
+
+.period_btn.close {
+  opacity: 0;
+  border-width: 0;
+  border-color: transparent;
+  height: 0;
+  min-height: 0;
+  padding: 0;
+  pointer-events: none;
+  margin: 0;
+  transition:
+    opacity 0.7s ease-in-out,
+    height 0.7s ease-in-out,
+    margin 0.7s ease-in-out,
+    border-width 0.7s ease-in-out;
+}
+
+/*************** ▽▽▽ グラフのスタイル ▽▽▽ *****************/
+
+.graph_box {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 500px;
+  margin: 24px auto 0;
+  padding: 0;
+  display: block;
+}
+
+.graph_card {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.graph_card_title {
+  margin: 0 0 16px 0;
+  font-size: 1rem;
+  color: #333;
+  border: none;
+  padding: 0;
+  font-weight: 700;
+}
+
+.graph_card_inner {
+  box-sizing: border-box;
+  width: 100%;
+  position: relative;
+  min-height: 240px;
+}
+
+.graph_card_inner canvas {
+  display: block;
+  max-width: 100%;
+  height: auto !important;
+}
+
+@media (max-width: 768px) {
+  .graph_box {
+    margin-top: 20px;
+    padding: 0;
+  }
+
+  .graph_card {
+    padding: 16px;
+  }
+
+  .graph_card_inner {
+    min-height: 220px;
+  }
+}
+
+/*************** △△△ グラフのスタイル △△△ *****************/
+
 
 @media(max-width: 768px){
     .nav {

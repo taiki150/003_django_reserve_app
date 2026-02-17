@@ -330,7 +330,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (color) {
                         massageBox.classList.remove(color);
                         massageBox.style.zIndex = "-10";
-                        massageBox.style.display = "none";
+                        // massageBox.style.display = "none";
                     }
                 }, 1000);
             }, 2000);
