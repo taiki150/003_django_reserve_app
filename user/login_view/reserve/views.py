@@ -396,3 +396,22 @@ class ReserveGraphView(TemplateView):
         context['stats_by_time'] = stats_by_time
         context['total_count'] = sum(s['count'] for s in stats_by_time)
         return self.render_to_response(context)
+
+
+# ******************************** #
+#        予約一覧取得API（非同期）            
+# ******************************** #
+
+class APIReserveGetDataView(View) :
+    def get(self, request, *args, **kwargs):
+        reservesAll = Reservation.objects.all()
+        my_reserves = Reservation.objects.filter(user=request.user)
+
+        all_reserve_data = list(reservesAll.values('id', 'date', 'time'))
+        user_reserve_data = list(my_reserves.values('id', 'date', 'time'))
+
+        return JsonResponse({
+            'success': True, 
+            'all_reserve_data': all_reserve_data,
+            'user_reserve_data': user_reserve_data,
+        }, status=200)

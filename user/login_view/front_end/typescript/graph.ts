@@ -44,6 +44,30 @@ if (navToggleBtn) {
 
 /*************** ▽▽▽ 予約集中ヒートマップ ▽▽▽ *****************/
 
+/**********************************************
+ *  非同期処理
+ *  ▽▽▽ グラフデータ取得ここから ▽▽▽
+ */
+
+const getGraphData = async () => {
+    const response = await fetch('/reserve/api/reservation/getData/', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+    const data = await response.json();
+    console.log('reserve_data:', data);
+    return data;
+};
+
+getGraphData();
+
+/*
+ *  △△△ グラフデータ取得ここまで △△△
+ **********************************************/
+ 
+
 declare const Chart: new (ctx: HTMLCanvasElement, config: object) => { destroy?: () => void };
 
 const DAYS = ['月', '火', '水', '木', '金', '土', '日'];
@@ -123,7 +147,7 @@ function initHeatmap(): void {
                 y: {
                     min: -0.5,
                     max: 4.5,
-                    reverse: true,
+                    reverse: false,
                     display: true,
                     offset: false,
                     grid: { offset: false },

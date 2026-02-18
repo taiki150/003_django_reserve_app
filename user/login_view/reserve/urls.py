@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (
     ReserveView, DetailView, APIReserveCreateView, APIReserveUpdateView, APIReserveDeleteView, APIReserveSearchView,
-    ReserveGraphView,
+    ReserveGraphView,APIReserveGetDataView,
 )
 
 app_name = 'reserve'
@@ -22,5 +22,8 @@ urlpatterns = [
 
     # 予約検索用のURL(非同期処理)
     path('api/reservation/search/', APIReserveSearchView.as_view(), name='api_reserch_reservation'),
+
+    # 予約検索用のURL(非同期処理)
+    path('api/reservation/getData/', APIReserveGetDataView.as_view(), name='api_reservation_get_data'),
     
 ]

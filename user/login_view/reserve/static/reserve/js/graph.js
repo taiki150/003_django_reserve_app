@@ -42,6 +42,24 @@ if (navToggleBtn) {
         });
     });
 }
+/*************** △△△ navの表示/非表示切り替え △△△ *****************/
+/*************** ▽▽▽ 予約集中ヒートマップ ▽▽▽ *****************/
+/**********************************************
+ *  非同期処理
+ *  ▽▽▽ グラフデータ取得ここから ▽▽▽
+ */
+const getGraphData = () => __awaiter(void 0, void 0, void 0, function* () {
+    const response = yield fetch('/reserve/api/reservation/getData/', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+    const data = yield response.json();
+    console.log('reserve_data:', data);
+    return data;
+});
+getGraphData();
 const DAYS = ['月', '火', '水', '木', '金', '土', '日'];
 const TIMES = ['10:00', '11:00', '12:00', '13:00', '14:00'];
 function createMockData() {
@@ -118,7 +136,7 @@ function initHeatmap() {
                 y: {
                     min: -0.5,
                     max: 4.5,
-                    reverse: true,
+                    reverse: false,
                     display: true,
                     offset: false,
                     grid: { offset: false },
