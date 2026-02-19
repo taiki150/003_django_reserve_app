@@ -42,12 +42,7 @@ if (navToggleBtn) {
         });
     });
 }
-/*************** △△△ navの表示/非表示切り替え △△△ *****************/
-/*************** ▽▽▽ 予約集中ヒートマップ ▽▽▽ *****************/
-/**********************************************
- *  非同期処理
- *  ▽▽▽ グラフデータ取得ここから ▽▽▽
- */
+// 非同期データ取得
 const getGraphData = () => __awaiter(void 0, void 0, void 0, function* () {
     const response = yield fetch('/reserve/api/reservation/getData/', {
         method: 'GET',
@@ -55,11 +50,26 @@ const getGraphData = () => __awaiter(void 0, void 0, void 0, function* () {
             'Content-Type': 'application/json',
         },
     });
-    const data = yield response.json();
-    console.log('reserve_data:', data);
-    return data;
+    const promiseData = yield response.json();
+    return promiseData;
 });
-getGraphData();
+const promiseDataOpen = () => __awaiter(void 0, void 0, void 0, function* () {
+    // Promiseデータの開封
+    const openData = yield getGraphData();
+    const allReserveData = openData.all_reserve_data;
+    const userReserveData = openData.user_reserve_data;
+    dataSort(userReserveData);
+});
+promiseDataOpen();
+// 何曜日の何時に何件を配列として格納してreturnする関数
+function dataSort(dataAaary) {
+    let sortData = [];
+    let dateCounter = 0;
+    dataAaary.forEach(data => {
+        let date = new Date(data.date).getDay();
+    });
+    return sortData;
+}
 const DAYS = ['月', '火', '水', '木', '金', '土', '日'];
 const TIMES = ['10:00', '11:00', '12:00', '13:00', '14:00'];
 function createMockData() {
