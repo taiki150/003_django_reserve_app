@@ -58,35 +58,46 @@ const promiseDataOpen = () => __awaiter(void 0, void 0, void 0, function* () {
     const openData = yield getGraphData();
     const allReserveData = openData.all_reserve_data;
     const userReserveData = openData.user_reserve_data;
-    dataSort(userReserveData);
+    mapColorUpdate(userReserveData);
+    return mapColorUpdate(userReserveData);
 });
-promiseDataOpen();
-// 何曜日の何時に何件を配列として格納してreturnする関数
-function dataSort(dataAaary) {
-    let sortData = [];
-    let dateCounter = 0;
-    dataAaary.forEach(data => {
-        let date = new Date(data.date).getDay();
-    });
-    return sortData;
-}
 const DAYS = ['月', '火', '水', '木', '金', '土', '日'];
 const TIMES = ['10:00', '11:00', '12:00', '13:00', '14:00'];
+// グラフの縦・横の生成関数
 function createMockData() {
     const data = [];
     for (let d = 0; d < 7; d++) {
         for (let t = 0; t < 5; t++) {
-            data.push({ x: d, y: t, v: Math.floor(Math.random() * 21) });
+            data.push({ x: d, y: t, v: 0 });
         }
     }
     return data;
 }
-function initHeatmap() {
+// 何曜日の何時に何件を配列として格納してreturnする関数
+function mapColorUpdate(dataAaary) {
+    const mockData = createMockData();
+    dataAaary.forEach(data => {
+        const time = TIMES.indexOf(data.time.slice(0, 5));
+        const date = new Date(data.date).getDay();
+        mockData.forEach((mock) => {
+            if (mock.x === date && mock.y === time) {
+                mock.v++;
+            }
+        });
+    });
+    return mockData;
+}
+const initHeatmap = () => __awaiter(void 0, void 0, void 0, function* () {
     const heatmapCtx = document.getElementById('heatmapChart');
     if (!heatmapCtx)
         return;
-    const heatmapData = createMockData();
-    const maxVal = 20;
+    const heatmapData = yield promiseDataOpen();
+    let maxVal = 0;
+    heatmapData.forEach((data) => {
+        if (maxVal < data.v) {
+            maxVal = data.v;
+        }
+    });
     new Chart(heatmapCtx, {
         type: 'matrix',
         data: {
@@ -158,7 +169,7 @@ function initHeatmap() {
             },
         },
     });
-}
+});
 if (typeof document !== 'undefined') {
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initHeatmap);

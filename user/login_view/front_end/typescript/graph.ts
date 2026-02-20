@@ -78,41 +78,41 @@ const promiseDataOpen = async () => {
     const openData = await getGraphData();
     const allReserveData = openData.all_reserve_data;
     const userReserveData = openData.user_reserve_data;
-    dataSort(userReserveData);
+    mapColorUpdate(userReserveData);
 
-
+    return mapColorUpdate(userReserveData);
 };
 
+const DAYS = ['月', '火', '水', '木', '金', '土', '日'];
+const TIMES = ['10:00', '11:00', '12:00', '13:00', '14:00'];
 
-promiseDataOpen();
-
-// 何曜日の何時に何件を配列として格納してreturnする関数
-function dataSort(dataAaary: ReserveRecord[]): {x: number, y: number, v: number}[] {
-    let sortData: { x: number; y: number; v: number }[] = [];
-    let dateCounter = 0
-    dataAaary.forEach(data => {
-        let date = new Date(data.date).getDay();
-        
-        
-    });
-
-    return sortData;
+// グラフの縦・横の生成関数
+function createMockData(): { x: number; y: number; v: number }[] {
+    const data: { x: number; y: number; v: number }[] = [];
+    for (let d = 0; d < 7; d++) {
+        for (let t = 0; t < 5; t++) {
+            data.push({ x: d, y: t, v: 0 });
+        }
+    }
+    return data;
 }
 
-/*
-{x: 1, y: 1, v: 1}を渡す必要がある。配列にはxyvを入れる
-上記が複数必要なため下記形式をとる
-[
-    {x: 1, y: 1, v: 1},
-    {x: 1, y: 1, v: 1},
-    ....
-    ...
-]
+// 何曜日の何時に何件を配列として格納してreturnする関数
+function mapColorUpdate(dataAaary: ReserveRecord[]) {
+    const mockData = createMockData();
+    dataAaary.forEach(data => {
+        const time = TIMES.indexOf(data.time.slice(0, 5));
+        const date = new Date(data.date).getDay();
+        
+        mockData.forEach((mock) => {
+            if(mock.x === date && mock.y === time){
+                mock.v ++;
+            }
+        });
+    }); 
 
-*/
-
-
-
+    return mockData;
+}
 
 /*
  *  △△△ グラフデータ取得ここまで △△△
@@ -121,26 +121,20 @@ function dataSort(dataAaary: ReserveRecord[]): {x: number, y: number, v: number}
 
 declare const Chart: new (ctx: HTMLCanvasElement, config: object) => { destroy?: () => void };
 
-const DAYS = ['月', '火', '水', '木', '金', '土', '日'];
-const TIMES = ['10:00', '11:00', '12:00', '13:00', '14:00'];
-
-function createMockData(): { x: number; y: number; v: number }[] {
-    const data: { x: number; y: number; v: number }[] = [];
-    for (let d = 0; d < 7; d++) {
-        for (let t = 0; t < 5; t++) {
-            data.push({ x: d, y: t, v: Math.floor(Math.random() * 21) });
-        }
-    }
-    return data;
-}
-
-function initHeatmap(): void {
+const initHeatmap = async() => {
     const heatmapCtx = document.getElementById('heatmapChart') as HTMLCanvasElement | null;
     if (!heatmapCtx) return;
 
-    const heatmapData = createMockData();
-    const maxVal = 20;
+    const heatmapData = await promiseDataOpen();
+    
+    let maxVal = 0;
 
+    heatmapData.forEach((data) => {
+        if(maxVal < data.v){
+            maxVal = data.v;
+        }
+    });
+    
     new Chart(heatmapCtx, {
         type: 'matrix',
         data: {
@@ -219,5 +213,6 @@ if (typeof document !== 'undefined') {
         initHeatmap();
     }
 }
+
 
 /*************** △△△ 予約集中ヒートマップ △△△ *****************/

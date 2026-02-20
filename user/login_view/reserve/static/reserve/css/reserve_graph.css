@@ -128,18 +128,18 @@
   position: absolute;
 }
 .nav_head .opne span:first-child {
-  width: 22px;
+  width: 18px;
   height: 3px;
 
   top: 13.5px;
-  left: 4px;
+  left: 6px;
 }
 
 .nav_head .opne span:last-child {
-  height: 22px;
+  height: 18px;
   width: 3px;
   left: 13.5px;
-  top: 4px;
+  top: 6px;
   transition: 
     transform 0.7s
   ;
@@ -238,6 +238,34 @@
   display: block;
   max-width: 100%;
   height: auto !important;
+}
+
+.graph_map {
+  width: 100%;
+  padding-left: 20px;
+  margin-top: 20px;
+  box-sizing: border-box;
+  display: flex;
+}
+.graph_map_box {
+  width: calc(100% / 3);
+}
+
+.graph_map_box dl {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+}
+
+.graph_map_box dl dt{
+  width: 18px;
+  height: 18px;
+  border: 1px solid #333;
+  margin-right: 12px;
+}
+.graph_map_box dl dd{
+margin: 0;
 }
 
 @media (max-width: 768px) {

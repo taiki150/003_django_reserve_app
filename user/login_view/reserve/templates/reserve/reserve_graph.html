@@ -16,14 +16,14 @@
     <div class="nav">
         <div class="nav_head">
             <h4 class="">期間の絞り込み</h4>
-            <button class="opne close">
+            <button class="opne">
                 <span></span>
                 <span></span>
             </button>
         </div>
         <button class="period_btn active close">全て</button>
-        <button class="period_btn close">１か月</button>
-        <button class="period_btn close">３か月</button>
+        <button class="period_btn close">過去１か月間</button>
+        <button class="period_btn close">過去３か月間</button>
     </div>
 
     <div class="graph_box">
@@ -31,6 +31,26 @@
             <h4 class="graph_card_title">予約集中ヒートマップ</h4>
             <div class="graph_card_inner">
                 <canvas id="heatmapChart" aria-label="曜日・時間帯別予約件数ヒートマップ"></canvas>
+            </div>
+            <div class="graph_map">
+                <div class="graph_map_box">
+                    <dl class="max_val">
+                        <dt></dt>
+                        <dd></dd>
+                    </dl>
+                </div>
+                <div class="graph_map_box">
+                    <dl class="mid_val">
+                        <dt></dt>
+                        <dd></dd>
+                    </dl>
+                </div>
+                <div class="graph_map_box">
+                    <dl class="min_val">
+                        <dt></dt>
+                        <dd></dd>
+                    </dl>
+                </div>
             </div>
         </div>
     </div>
