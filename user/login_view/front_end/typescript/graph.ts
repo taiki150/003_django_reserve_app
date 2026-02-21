@@ -4,14 +4,13 @@ const loadeBox = document.querySelector('.loade_view') as HTMLDivElement;
 // ランダムな数値の生成
 const getLoadingTime = (): number => {
     const min = 3;
-    const max = 5;
+    const max = 7;
     // 4〜7: number のいずれかを生成して 1000倍する
     return (Math.floor(Math.random() * (max - min + 1)) + min) * 1000;
 };
 
 const startLoading = async () => {
     const delay = getLoadingTime();
-    console.log(delay);
 
     await new Promise(resolve => setTimeout(resolve, delay));
     loadeBox.style.opacity = "0";
@@ -41,6 +40,33 @@ if (navToggleBtn) {
     });
 }
 /*************** △△△ navの表示/非表示切り替え △△△ *****************/
+
+
+/*************** ▽▽▽ トグルによるデータの切り替え ▽▽▽ *****************/
+const toggleLabel = document.querySelector('.toggle_label') as HTMLLabelElement;
+const toggleSpan = document.querySelector('.toggle_span') as HTMLSpanElement;
+const toggleText = document.querySelectorAll('.toggle_p span');
+
+document.addEventListener('click', (e: MouseEvent) => {
+    const target = e.target as HTMLElement;
+
+    if(target.classList.contains('toggle_button')){
+        toggleSwitch();
+        initHeatmap();
+    }
+});
+
+function toggleSwitch() {
+
+    toggleLabel.classList.toggle('active');
+    toggleSpan.classList.toggle('active');
+    toggleText.forEach((span) => {
+        span.classList.toggle('active');
+    });
+}
+
+/*************** △△△ トグルによるデータの切り替え △△△ *****************/
+
 
 /*************** ▽▽▽ 予約集中ヒートマップ ▽▽▽ *****************/
 
@@ -73,14 +99,11 @@ const getGraphData = async (): Promise<GraphDataResponse> => {
     return promiseData;
 };
 
-const promiseDataOpen = async () => {
-    // Promiseデータの開封
+/** 個人=true / 全体=false で使用するデータを切り替え */
+const promiseDataOpen = async (isUserOnly: boolean) => {
     const openData = await getGraphData();
-    const allReserveData = openData.all_reserve_data;
-    const userReserveData = openData.user_reserve_data;
-    mapColorUpdate(userReserveData);
-
-    return mapColorUpdate(userReserveData);
+    const targetData = isUserOnly ? openData.user_reserve_data : openData.all_reserve_data;
+    return mapColorUpdate(targetData);
 };
 
 const DAYS = ['月', '火', '水', '木', '金', '土', '日'];
@@ -117,15 +140,21 @@ function mapColorUpdate(dataAaary: ReserveRecord[]) {
 /*
  *  △△△ グラフデータ取得ここまで △△△
  **********************************************/
- 
-
 declare const Chart: new (ctx: HTMLCanvasElement, config: object) => { destroy?: () => void };
 
-const initHeatmap = async() => {
+let heatmapChartInstance: { destroy?: () => void } | null = null;
+
+const initHeatmap = async () => {
     const heatmapCtx = document.getElementById('heatmapChart') as HTMLCanvasElement | null;
     if (!heatmapCtx) return;
 
-    const heatmapData = await promiseDataOpen();
+    const isUserOnly = toggleText[0]?.classList.contains('active') ?? false;
+    const heatmapData = await promiseDataOpen(isUserOnly);
+
+    if (heatmapChartInstance) {
+        heatmapChartInstance.destroy?.();
+        heatmapChartInstance = null;
+    }
     
     let maxVal = 0;
 
@@ -135,7 +164,7 @@ const initHeatmap = async() => {
         }
     });
     
-    new Chart(heatmapCtx, {
+    heatmapChartInstance = new Chart(heatmapCtx, {
         type: 'matrix',
         data: {
             datasets: [{
@@ -204,6 +233,24 @@ const initHeatmap = async() => {
             },
         },
     });
+    const dlEl = document.querySelectorAll('.graph_map_box dl');
+    let elCounter = 0;
+
+    const colorValues = [1, 0.5, 0.1];
+    const textValues = [`${maxVal}件〜`, `${maxVal / 2}件〜`, `〜0件`];
+    // const textValues = ['10', '5', '0'];
+    dlEl.forEach((el) => {
+        const color = colorValues[elCounter] ?? 0;
+        elCounter++;
+        
+        const dtEl = el.querySelector('dt');
+        const ddEl = el.querySelector('dd');
+        
+        if(dtEl && ddEl){
+            dtEl.style.backgroundColor = `rgba(30, 170, 162,${color})`;
+            ddEl.textContent = textValues[elCounter-1] ?? 0;
+        }
+    });
 }
 
 if (typeof document !== 'undefined') {
@@ -213,6 +260,4 @@ if (typeof document !== 'undefined') {
         initHeatmap();
     }
 }
-
-
 /*************** △△△ 予約集中ヒートマップ △△△ *****************/

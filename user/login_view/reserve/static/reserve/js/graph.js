@@ -13,13 +13,12 @@ const loadeBox = document.querySelector('.loade_view');
 // ランダムな数値の生成
 const getLoadingTime = () => {
     const min = 3;
-    const max = 5;
+    const max = 7;
     // 4〜7: number のいずれかを生成して 1000倍する
     return (Math.floor(Math.random() * (max - min + 1)) + min) * 1000;
 };
 const startLoading = () => __awaiter(void 0, void 0, void 0, function* () {
     const delay = getLoadingTime();
-    console.log(delay);
     yield new Promise(resolve => setTimeout(resolve, delay));
     loadeBox.style.opacity = "0";
     loadeBox.style.transform = "translateX(100vw)";
@@ -42,6 +41,25 @@ if (navToggleBtn) {
         });
     });
 }
+/*************** △△△ navの表示/非表示切り替え △△△ *****************/
+/*************** ▽▽▽ トグルによるデータの切り替え ▽▽▽ *****************/
+const toggleLabel = document.querySelector('.toggle_label');
+const toggleSpan = document.querySelector('.toggle_span');
+const toggleText = document.querySelectorAll('.toggle_p span');
+document.addEventListener('click', (e) => {
+    const target = e.target;
+    if (target.classList.contains('toggle_button')) {
+        toggleSwitch();
+        initHeatmap();
+    }
+});
+function toggleSwitch() {
+    toggleLabel.classList.toggle('active');
+    toggleSpan.classList.toggle('active');
+    toggleText.forEach((span) => {
+        span.classList.toggle('active');
+    });
+}
 // 非同期データ取得
 const getGraphData = () => __awaiter(void 0, void 0, void 0, function* () {
     const response = yield fetch('/reserve/api/reservation/getData/', {
@@ -53,13 +71,11 @@ const getGraphData = () => __awaiter(void 0, void 0, void 0, function* () {
     const promiseData = yield response.json();
     return promiseData;
 });
-const promiseDataOpen = () => __awaiter(void 0, void 0, void 0, function* () {
-    // Promiseデータの開封
+/** 個人=true / 全体=false で使用するデータを切り替え */
+const promiseDataOpen = (isUserOnly) => __awaiter(void 0, void 0, void 0, function* () {
     const openData = yield getGraphData();
-    const allReserveData = openData.all_reserve_data;
-    const userReserveData = openData.user_reserve_data;
-    mapColorUpdate(userReserveData);
-    return mapColorUpdate(userReserveData);
+    const targetData = isUserOnly ? openData.user_reserve_data : openData.all_reserve_data;
+    return mapColorUpdate(targetData);
 });
 const DAYS = ['月', '火', '水', '木', '金', '土', '日'];
 const TIMES = ['10:00', '11:00', '12:00', '13:00', '14:00'];
@@ -87,18 +103,25 @@ function mapColorUpdate(dataAaary) {
     });
     return mockData;
 }
+let heatmapChartInstance = null;
 const initHeatmap = () => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c;
     const heatmapCtx = document.getElementById('heatmapChart');
     if (!heatmapCtx)
         return;
-    const heatmapData = yield promiseDataOpen();
+    const isUserOnly = (_b = (_a = toggleText[0]) === null || _a === void 0 ? void 0 : _a.classList.contains('active')) !== null && _b !== void 0 ? _b : false;
+    const heatmapData = yield promiseDataOpen(isUserOnly);
+    if (heatmapChartInstance) {
+        (_c = heatmapChartInstance.destroy) === null || _c === void 0 ? void 0 : _c.call(heatmapChartInstance);
+        heatmapChartInstance = null;
+    }
     let maxVal = 0;
     heatmapData.forEach((data) => {
         if (maxVal < data.v) {
             maxVal = data.v;
         }
     });
-    new Chart(heatmapCtx, {
+    heatmapChartInstance = new Chart(heatmapCtx, {
         type: 'matrix',
         data: {
             datasets: [{
@@ -168,6 +191,22 @@ const initHeatmap = () => __awaiter(void 0, void 0, void 0, function* () {
                 },
             },
         },
+    });
+    const dlEl = document.querySelectorAll('.graph_map_box dl');
+    let elCounter = 0;
+    const colorValues = [1, 0.5, 0.1];
+    const textValues = [`${maxVal}件〜`, `${maxVal / 2}件〜`, `〜0件`];
+    // const textValues = ['10', '5', '0'];
+    dlEl.forEach((el) => {
+        var _a, _b;
+        const color = (_a = colorValues[elCounter]) !== null && _a !== void 0 ? _a : 0;
+        elCounter++;
+        const dtEl = el.querySelector('dt');
+        const ddEl = el.querySelector('dd');
+        if (dtEl && ddEl) {
+            dtEl.style.backgroundColor = `rgba(30, 170, 162,${color})`;
+            ddEl.textContent = (_b = textValues[elCounter - 1]) !== null && _b !== void 0 ? _b : 0;
+        }
     });
 });
 if (typeof document !== 'undefined') {

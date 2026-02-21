@@ -7,6 +7,7 @@
     top: 0;
     left: 0;
     transition: 1s;
+    z-index: 100;
 
     display: none;
 }
@@ -225,6 +226,72 @@
   border: none;
   padding: 0;
   font-weight: 700;
+  line-height: 24px;
+
+  display: flex;
+}
+
+.graph_card_title span {
+  display: block;
+  white-space: nowrap;
+}
+
+.graph_card_title form {
+  text-align: right;
+  position: relative;
+}
+
+.toggle_label {
+  width: 50px;
+  min-width: 50px;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
+  border-radius: 20px;
+  padding: 0;
+  border: 2px solid #1eaaa2;
+  margin-right: 20px;
+  transition: background-color 0.5s;
+  box-shadow: inset
+}
+.toggle_label.active {
+  background-color: #FFF;
+}
+
+.toggle_span {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background-color: #FFF;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 24px;
+  border-radius: 100%;
+  cursor: pointer;
+  transition: right 0.5s, background-color 0.7s;
+}
+.toggle_span.active{
+  right: 48px;
+  background-color: #48c1b9;
+}
+
+.graph_card_title form p {
+  position: absolute;
+  font-size: 12px;
+  color: #ccc;
+  margin-bottom: 0;
+
+  right: 0;
+  bottom: -24px;
+}
+
+.graph_card_title form p span {
+  display: block;
+  margin: 0 10px;
+}
+
+.graph_card_title form p span.active {
+  color: #48c1b9;
 }
 
 .graph_card_inner {
@@ -324,6 +391,27 @@ margin: 0;
 
     .nav h4:before{
         right: 5.5px;
+    }
+
+    .nav_head h4 {
+      text-align: left;
+    }
+
+    .toggle_label {
+      background-color: #1eaaa2;
+    }
+
+    .toggle_p {
+      display: flex;
+    }
+
+    .graph_map_box dl dt {
+      width: 15px;
+      height: 15px;
+      margin-right: 6px;
+    }
+    .graph_map_box dl dd {
+      font-size: 12px;
     }
     
 }

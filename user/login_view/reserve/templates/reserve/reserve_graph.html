@@ -28,27 +28,35 @@
 
     <div class="graph_box">
         <div class="graph_card">
-            <h4 class="graph_card_title">予約集中ヒートマップ</h4>
+            <h4 class="graph_card_title">
+                <span>予約集中ヒートマップ</span>
+                <form>
+                    <label for="" class="toggle_label toggle_button"></label>
+                    <input type="hidden">
+                    <span class="toggle_span toggle_button"></span>
+                    <p class="toggle_p"><span class="">個人</span>/<span class="active">全体</span></p>
+                </form>
+            </h4>
             <div class="graph_card_inner">
                 <canvas id="heatmapChart" aria-label="曜日・時間帯別予約件数ヒートマップ"></canvas>
             </div>
             <div class="graph_map">
                 <div class="graph_map_box">
                     <dl class="max_val">
-                        <dt></dt>
-                        <dd></dd>
+                        <dt class="max"></dt>
+                        <dd class="max"></dd>
                     </dl>
                 </div>
                 <div class="graph_map_box">
                     <dl class="mid_val">
-                        <dt></dt>
-                        <dd></dd>
+                        <dt class="mid"></dt>
+                        <dd class="mid"></dd>
                     </dl>
                 </div>
                 <div class="graph_map_box">
                     <dl class="min_val">
-                        <dt></dt>
-                        <dd></dd>
+                        <dt class="min"></dt>
+                        <dd class="min"></dd>
                     </dl>
                 </div>
             </div>
