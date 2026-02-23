@@ -447,7 +447,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // 確認ダイアログを表示
             const dateDisplay = date.replace(/(\d{4})-(\d{2})-(\d{2})/, '$1年$2月$3日');
             const timeDisplay = time.replace(/(\d{2}):(\d{2})/, '$1時');
-            const confirmMessage = `${dateDisplay}${timeDisplay}の予約を削除してもよろしいですか？`;
+            const confirmMessage = `${dateDisplay}${timeDisplay}の予約をキャンセルしてもよろしいですか？`;
+            if (today === date) {
+                messagePopUp('Webでの変更は1日前まで可能です。電話にて受付しております', 'red');
+                return;
+            }
             if (!confirm(confirmMessage)) {
                 // キャンセルされた場合は、選択状態を解除
                 document.querySelectorAll('.list-box-container').forEach((box) => {
@@ -887,5 +891,29 @@ function highlightParentBox(button) {
         if (parentBox) {
             parentBox.classList.add('selected');
         }
+    }
+}
+// バリデーション関数
+let messageTimer;
+function messagePopUp(text, color) {
+    const massageBox = document.querySelector('.massage-box');
+    const massageText = document.querySelector('.massage-text');
+    if (massageBox && massageText) {
+        massageText.textContent = text;
+        massageBox.style.zIndex = "10";
+        massageBox.classList.add('active');
+        if (color) {
+            massageBox.classList.add(color);
+        }
+        messageTimer = setTimeout(() => {
+            massageBox.classList.remove('active');
+            setTimeout(() => {
+                if (color) {
+                    massageBox.classList.remove(color);
+                    massageBox.style.zIndex = "-10";
+                    // massageBox.style.display = "none";
+                }
+            }, 1000);
+        }, 2000);
     }
 }
