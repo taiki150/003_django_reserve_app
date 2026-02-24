@@ -1,0 +1,17 @@
+{% extends 'base_admin.html' %}
+{% block content %}
+<h3>管理者ログイン</h3>
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li class="{{ message.tags }}">{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="ログイン">
+</form>
+<div>ユーザー画面は<a href="{% url 'acounts:home' %}">こちら</a></div>
+{% endblock %}

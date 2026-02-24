@@ -1,0 +1,66 @@
+/* 予約管理画面用スタイル */
+
+/* 日付編集 */
+.date-cell .date-edit-form {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.date-cell .date-edit-form .date-input {
+    margin-right: 4px;
+}
+
+.date-cell .btn-date-edit {
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.date-cell .btn-date-edit:hover {
+    text-decoration: underline;
+}
+
+/* 時間編集 */
+.time-cell .time-edit-form {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.time-cell .time-edit-form .time-input {
+    margin-right: 4px;
+}
+
+.time-cell .btn-time-edit {
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.time-cell .btn-time-edit:hover {
+    text-decoration: underline;
+}
+
+/* トグルボタン */
+.reserve-view-toggle .toggle-btn {
+    display: inline-block;
+    padding: 8px 16px;
+    margin-right: 8px;
+    border: 1px solid #dee2e6;
+    background-color: #fff;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.reserve-view-toggle .toggle-btn:hover {
+    background-color: #f8f9fa;
+}
+
+.reserve-view-toggle .toggle-btn.active {
+    background-color: #333;
+    border-color: #333;
+    color: #fff;
+}
+
+/* ページネーション */

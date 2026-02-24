@@ -1,0 +1,28 @@
+/* ▼▼▼ ここからメインコンテンツ ▼▼▼ */
+
+form label {
+    background-color: #666;
+}
+
+
+form input[type="submit"] {
+    border: 2px solid #666;
+}
+
+form input[type="submit"]:hover {
+    background-color: #666;
+
+}
+/* formのスタイル ここまで */
+
+@media (max-width: 768px){
+
+    form input[type="submit"], form input[type="submit"]:hover {
+        background-color: #1eaaa2;
+    }
+
+}
+
+
+
+/* ▲▲▲ ここまでメインコンテンツ ▲▲▲ */

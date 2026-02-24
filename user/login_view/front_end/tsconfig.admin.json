@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2015",
+    "lib": ["ES2017", "DOM"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "../admin_app/static/admin_app/js",
+    "rootDir": "typescript/admin",
+    "module": "none"
+  },
+  "files": ["typescript/admin/reserve.ts"]
+}
