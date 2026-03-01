@@ -1,12 +1,14 @@
 import json
 from datetime import date, datetime
 from django.shortcuts import redirect
+from django.conf import settings
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.views.generic import TemplateView, FormView, ListView, View
 from django.urls import reverse_lazy
 from django.http import JsonResponse
+from django.core.mail import send_mail
 
 from django.db import IntegrityError
 
@@ -123,6 +125,38 @@ class APIAdminReserveUpdateView(UserPassesTestMixin, View):
             if new_time_str:
                 response_data['new_time'] = new_time.strftime('%H:%M')
             return JsonResponse(response_data, status=200)
+        except Reservation.DoesNotExist:
+            return JsonResponse({'success': False, 'error': '予約が見つかりません'}, status=404)
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': '無効なJSONです'}, status=400)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+class APIAdminSendTestReminderView(UserPassesTestMixin, View):
+    """管理者用：指定予約のテストメール送信API"""
+
+    def test_func(self):
+        return self.request.user.is_authenticated and self.request.user.is_staff
+
+    def handle_no_permission(self):
+        return JsonResponse({'success': False, 'error': '権限がありません'}, status=403)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            reservation_id = data.get('reservation_id')
+            if not reservation_id:
+                return JsonResponse({'success': False, 'error': '予約IDが必須です'}, status=400)
+
+            reservation = Reservation.objects.select_related('user').get(pk=reservation_id)
+            to_email = getattr(settings, 'REMINDER_TEST_EMAIL', None) or reservation.user.email
+
+            subject = f'【リマインド】{reservation.date} の予約のお知らせ'
+            message = f'{reservation.user.username} 様\n\n{reservation.date} {reservation.time} のご予約をお忘れなく。'
+            send_mail(subject, message, None, [to_email], fail_silently=False)
+
+            return JsonResponse({'success': True, 'message': 'テストメールを送信しました'}, status=200)
         except Reservation.DoesNotExist:
             return JsonResponse({'success': False, 'error': '予約が見つかりません'}, status=404)
         except json.JSONDecodeError:

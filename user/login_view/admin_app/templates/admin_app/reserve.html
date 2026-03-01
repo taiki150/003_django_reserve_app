@@ -6,7 +6,7 @@
 {% block content %}
 <h3>予約管理</h3>
 <p>全ユーザーの予約一覧です。</p>
-<div class="reserve-admin-content" data-reserve-update-url="{% url 'admin_app:api_reserve_update' %}">
+<div class="reserve-admin-content" data-reserve-update-url="{% url 'admin_app:api_reserve_update' %}" data-send-test-reminder-url="{% url 'admin_app:api_send_test_reminder' %}">
 <div class="reserve-view-toggle mb-3">
     <a href="?view=future" class="toggle-btn {% if view_mode == 'future' %}active{% endif %}">本日以降の予約</a>
     <a href="?view=past" class="toggle-btn {% if view_mode == 'past' %}active{% endif %}">過去の予約</a>
@@ -19,6 +19,7 @@
             <th>予約日</th>
             <th>予約時間</th>
             <th>最終更新</th>
+            <th>テストメール送信</th>
         </tr>
     </thead>
     <tbody>
@@ -58,10 +59,11 @@
             <td>{{ reservation.time|time:"H：i" }}</td>
             {% endif %}
             <td>{% if reservation.updated_at != reservation.created_at %}{{ reservation.updated_at|date:"Y/m/d H:i" }}{% else %}{{ reservation.created_at|date:"Y/m/d H:i" }}{% endif %}</td>
+            <td><button type="button" class="btn-send-test-reminder btn btn-sm btn-outline-secondary" data-reservation-id="{{ reservation.id }}">テストメール送信</button></td>
         </tr>
         {% empty %}
         <tr>
-            <td colspan="5">予約がありません。</td>
+            <td colspan="6">予約がありません。</td>
         </tr>
         {% endfor %}
     </tbody>

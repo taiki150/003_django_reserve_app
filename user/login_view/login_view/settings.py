@@ -142,3 +142,20 @@ SESSION_COOKIE_AGE = 1000000000
 # ブラウザクローズでsession切る
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 # -------------------- セキュリティについて --------------------  #
+
+# settings.py
+
+# メール送信の設定（例：Gmail）
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'taiki1544.0711@gmail.com'
+EMAIL_HOST_PASSWORD = 'your-app-password'  # 2段階認証の場合はアプリパスワード
+DEFAULT_FROM_EMAIL = 'taiki1544.0711@gmail.com'
+
+# テストメールアドレス
+REMINDER_TEST_EMAIL = 'taiki1544.0711@gmail.com'
+
+# 開発時：メールをコンソールに出力（実際には送信しない）
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

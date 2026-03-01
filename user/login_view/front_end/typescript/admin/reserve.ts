@@ -33,6 +33,7 @@ function initReserveEdit(): void {
     if (!container) return;
 
     const apiUrl = container.dataset.reserveUpdateUrl;
+    const sendTestReminderUrl = container.dataset.sendTestReminderUrl;
     if (!apiUrl) return;
 
     // ---- 日付編集 ----
@@ -170,6 +171,41 @@ function initReserveEdit(): void {
                 });
         });
     });
+
+    // ---- テストメール送信 ----
+    if (sendTestReminderUrl) {
+        document.querySelectorAll<HTMLButtonElement>('.btn-send-test-reminder').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const reservationId = btn.dataset.reservationId;
+                if (!reservationId) return;
+                btn.disabled = true;
+                fetch(sendTestReminderUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken') || '',
+                    },
+                    body: JSON.stringify({
+                        reservation_id: parseInt(reservationId, 10),
+                    }),
+                })
+                    .then((r) => r.json())
+                    .then((data: { success: boolean; message?: string; error?: string }) => {
+                        if (data.success) {
+                            alert(data.message || 'テストメールを送信しました');
+                        } else {
+                            alert(data.error || '送信に失敗しました');
+                        }
+                    })
+                    .catch(() => {
+                        alert('通信エラーが発生しました');
+                    })
+                    .then(() => {
+                        btn.disabled = false;
+                    });
+            });
+        });
+    }
 }
 
 document.addEventListener('DOMContentLoaded', initReserveEdit);
