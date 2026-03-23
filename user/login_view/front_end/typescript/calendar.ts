@@ -343,7 +343,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const massageText = document.querySelector('.massage-text');
         if(massageBox && massageText){
             massageText.textContent = text
-            massageBox.style.zIndex = "10";
+            massageBox.style.zIndex = "1200";
             massageBox.classList.add('active');
             if(color){
                 massageBox.classList.add(color);

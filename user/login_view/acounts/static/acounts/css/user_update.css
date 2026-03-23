@@ -18,6 +18,7 @@
     color: #2d6a64;
     transition: opacity 1s, transform 2s;
     left: 50%;
+    z-index: 100;
 }
 
 .massage-box.red {

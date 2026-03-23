@@ -64,3 +64,24 @@
 }
 
 /* ページネーション */
+
+.reserve_count {
+    padding: 20px;
+    background-color: #eee;
+    margin-bottom: 20px;
+}
+
+.reserve_count h4{
+    font-size: 18px;
+    border-bottom: 2px solid #333;
+    padding-bottom: 4px;
+}
+
+.reserve_count form p {
+    width: 100%;
+    max-width: none;
+}
+
+.reserve_count form label {
+    width: 30%;
+}

@@ -5,91 +5,104 @@
 {% endblock %}
 {% block content %}
 <h3>予約管理</h3>
-<p>全ユーザーの予約一覧です。</p>
-<div class="reserve-admin-content" data-reserve-update-url="{% url 'admin_app:api_reserve_update' %}" data-send-test-reminder-url="{% url 'admin_app:api_send_test_reminder' %}">
-<div class="reserve-view-toggle mb-3">
-    <a href="?view=future" class="toggle-btn {% if view_mode == 'future' %}active{% endif %}">本日以降の予約</a>
-    <a href="?view=past" class="toggle-btn {% if view_mode == 'past' %}active{% endif %}">過去の予約</a>
+<div class="reserve_count">
+    <h4 class="mt-4">予約上限設定</h4>
+    <p class="text-muted">
+        1ユーザーが1日に行える予約の最大件数を設定します。<br>
+        既存の予約はそのままの設定を維持します
+    </p>
+    <form method="post" class="mt-3">
+        {% csrf_token %}
+        {{ limit_form.as_p }}
+        <button type="submit" class="btn btn-primary">保存</button>
+    </form>
 </div>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>ユーザーID</th>
-            <th>ユーザー名</th>
-            <th>予約日</th>
-            <th>予約時間</th>
-            <th>最終更新</th>
-            <th>テストメール送信</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for reservation in reservations %}
-        <tr data-reservation-id="{{ reservation.id }}">
-            <td>{{ reservation.user.id }}</td>
-            <td>{{ reservation.user.username }}</td>
-            {% if view_mode == 'future' %}
-            <td class="date-cell">
-                <span class="date-view">
-                    <button type="button" class="btn-date-edit btn btn-link p-0" data-reservation-id="{{ reservation.id }}" data-date="{{ reservation.date|date:'Y-m-d' }}">{{ reservation.date|date:"Y-m-d" }}</button>
-                </span>
-                <div class="date-edit-form" style="display: none;">
-                    <input type="date" class="date-input form-control form-control-sm d-inline-block w-auto">
-                    <button type="button" class="btn-date-save btn btn-sm btn-primary">保存</button>
-                    <button type="button" class="btn-date-cancel btn btn-sm btn-outline-secondary">キャンセル</button>
-                </div>
-            </td>
-            <td class="time-cell">
-                <span class="time-view">
-                    <button type="button" class="btn-time-edit btn btn-link p-0" data-reservation-id="{{ reservation.id }}" data-date="{{ reservation.date|date:'Y-m-d' }}" data-time="{{ reservation.time|time:'H:i' }}">{{ reservation.time|time:"H：i" }}</button>
-                </span>
-                <div class="time-edit-form" style="display: none;">
-                    <select class="time-input form-control form-control-sm d-inline-block w-auto">
-                        <option value="10:00">10：00</option>
-                        <option value="11:00">11：00</option>
-                        <option value="12:00">12：00</option>
-                        <option value="13:00">13：00</option>
-                        <option value="14:00">14：00</option>
-                    </select>
-                    <button type="button" class="btn-time-save btn btn-sm btn-primary">保存</button>
-                    <button type="button" class="btn-time-cancel btn btn-sm btn-outline-secondary">キャンセル</button>
-                </div>
-            </td>
-            {% else %}
-            <td>{{ reservation.date|date:"Y-m-d" }}</td>
-            <td>{{ reservation.time|time:"H：i" }}</td>
-            {% endif %}
-            <td>{% if reservation.updated_at != reservation.created_at %}{{ reservation.updated_at|date:"Y/m/d H:i" }}{% else %}{{ reservation.created_at|date:"Y/m/d H:i" }}{% endif %}</td>
-            <td><button type="button" class="btn-send-test-reminder btn btn-sm btn-outline-secondary" data-reservation-id="{{ reservation.id }}">テストメール送信</button></td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="6">予約がありません。</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="reserve-admin-content" data-reserve-update-url="{% url 'admin_app:api_reserve_update' %}" data-send-test-reminder-url="{% url 'admin_app:api_send_test_reminder' %}">
+    
+    <div class="reserve-view-toggle mb-3">
+        <a href="?view=future" class="toggle-btn {% if view_mode == 'future' %}active{% endif %}">本日以降の予約</a>
+        <a href="?view=past" class="toggle-btn {% if view_mode == 'past' %}active{% endif %}">過去の予約</a>
+    </div>
 
-{% if page_obj.has_other_pages %}
-    <ul class="pagination">
-        {% if page_obj.has_previous %}
-        <li class="page-item">
-            <a class="page-link" href="?view={{ view_mode }}&page={{ page_obj.previous_page_number }}">前へ</a>
-        </li>
-        {% endif %}
-        {% for num in page_obj.paginator.page_range %}
-            {% if page_obj.number == num %}
-            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-            {% else %}
-            <li class="page-item"><a class="page-link" href="?view={{ view_mode }}&page={{ num }}">{{ num }}</a></li>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ユーザーID</th>
+                <th>ユーザー名</th>
+                <th>予約日</th>
+                <th>予約時間</th>
+                <th>最終更新</th>
+                <th>テストメール送信</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reservation in reservations %}
+            <tr data-reservation-id="{{ reservation.id }}">
+                <td>{{ reservation.user.id }}</td>
+                <td>{{ reservation.user.username }}</td>
+                {% if view_mode == 'future' %}
+                <td class="date-cell">
+                    <span class="date-view">
+                        <button type="button" class="btn-date-edit btn btn-link p-0" data-reservation-id="{{ reservation.id }}" data-date="{{ reservation.date|date:'Y-m-d' }}">{{ reservation.date|date:"Y-m-d" }}</button>
+                    </span>
+                    <div class="date-edit-form" style="display: none;">
+                        <input type="date" class="date-input form-control form-control-sm d-inline-block w-auto">
+                        <button type="button" class="btn-date-save btn btn-sm btn-primary">保存</button>
+                        <button type="button" class="btn-date-cancel btn btn-sm btn-outline-secondary">キャンセル</button>
+                    </div>
+                </td>
+                <td class="time-cell">
+                    <span class="time-view">
+                        <button type="button" class="btn-time-edit btn btn-link p-0" data-reservation-id="{{ reservation.id }}" data-date="{{ reservation.date|date:'Y-m-d' }}" data-time="{{ reservation.time|time:'H:i' }}">{{ reservation.time|time:"H：i" }}</button>
+                    </span>
+                    <div class="time-edit-form" style="display: none;">
+                        <select class="time-input form-control form-control-sm d-inline-block w-auto">
+                            <option value="10:00">10：00</option>
+                            <option value="11:00">11：00</option>
+                            <option value="12:00">12：00</option>
+                            <option value="13:00">13：00</option>
+                            <option value="14:00">14：00</option>
+                        </select>
+                        <button type="button" class="btn-time-save btn btn-sm btn-primary">保存</button>
+                        <button type="button" class="btn-time-cancel btn btn-sm btn-outline-secondary">キャンセル</button>
+                    </div>
+                </td>
+                {% else %}
+                <td>{{ reservation.date|date:"Y-m-d" }}</td>
+                <td>{{ reservation.time|time:"H：i" }}</td>
+                {% endif %}
+                <td>{% if reservation.updated_at != reservation.created_at %}{{ reservation.updated_at|date:"Y/m/d H:i" }}{% else %}{{ reservation.created_at|date:"Y/m/d H:i" }}{% endif %}</td>
+                <td><button type="button" class="btn-send-test-reminder btn btn-sm btn-outline-secondary" data-reservation-id="{{ reservation.id }}">テストメール送信</button></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">予約がありません。</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if page_obj.has_other_pages %}
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?view={{ view_mode }}&page={{ page_obj.previous_page_number }}">前へ</a>
+            </li>
             {% endif %}
-        {% endfor %}
-        {% if page_obj.has_next %}
-        <li class="page-item">
-            <a class="page-link" href="?view={{ view_mode }}&page={{ page_obj.next_page_number }}">次へ</a>
-        </li>
-        {% endif %}
-    </ul>
-{% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% else %}
+                <li class="page-item"><a class="page-link" href="?view={{ view_mode }}&page={{ num }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?view={{ view_mode }}&page={{ page_obj.next_page_number }}">次へ</a>
+            </li>
+            {% endif %}
+        </ul>
+    {% endif %}
 </div>
 
 <script src="{% static 'admin_app/js/reserve.js' %}"></script>

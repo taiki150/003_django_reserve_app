@@ -32,12 +32,24 @@ class APIReserveCreateView(View):
             if not selected_date or not selected_time:
                 return JsonResponse({'success': False, 'error': '日付と時間が必須です'}, status=400)
             
-            # 二重予約防止：同じユーザーが同じ日時で既に予約していないかチェック
             try:
                 date_obj = datetime.strptime(selected_date, '%Y-%m-%d').date()
                 time_obj = datetime.strptime(selected_time, '%H:%M').time()
             except ValueError:
                 return JsonResponse({'success': False, 'error': '無効な日付または時間の形式です'}, status=400)
+            
+            # 1日あたりの予約上限チェック
+            from admin_app.models import ReservationLimitSetting
+            limit = ReservationLimitSetting.get_limit()
+            existing_count = Reservation.objects.filter(user=request.user, date=date_obj).count()
+            if existing_count >= limit:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'1日あたりの予約は{limit}件までです。本日は既に上限に達しています。',
+                    'error_code': 'daily_limit_exceeded'
+                }, status=400)
+            
+            # 二重予約防止：同じユーザーが同じ日時で既に予約していないかチェック
             if Reservation.objects.filter(user=request.user, date=date_obj, time=time_obj).exists():
                 return JsonResponse({
                     'success': False,
@@ -129,6 +141,18 @@ class APIReserveUpdateView(View):
                     'error': '変更先の日時は既に予約済みです。二重予約はできません。',
                     'error_code': 'duplicate_reservation'
                 }, status=400)
+            
+            # 日付が変わる場合：1日あたりの予約上限チェック（変更先の日付で）
+            if old_date_obj != new_date_obj:
+                from admin_app.models import ReservationLimitSetting
+                limit = ReservationLimitSetting.get_limit()
+                count_on_new_date = Reservation.objects.filter(user=request.user, date=new_date_obj).count()
+                if count_on_new_date >= limit:
+                    return JsonResponse({
+                        'success': False,
+                        'error': f'1日あたりの予約は{limit}件までです。変更先の日付は既に上限に達しています。',
+                        'error_code': 'daily_limit_exceeded'
+                    }, status=400)
             
             # 新しい日付・時間でフォームデータを作成
             form_data = {

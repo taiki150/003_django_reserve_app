@@ -12,7 +12,8 @@ from django.core.mail import send_mail
 
 from django.db import IntegrityError
 
-from .forms import AdminLoginForm
+from .forms import AdminLoginForm, ReservationLimitSettingForm
+from .models import ReservationLimitSetting
 from reserve.models import Reservation
 
 
@@ -40,17 +41,54 @@ class AdminLoginView(FormView):
         return super().form_valid(form)
 
 
-class AdminHomeView(TemplateView):
+class AdminHomeView(UserPassesTestMixin, View):
     """管理者用ホーム画面"""
     template_name = 'admin_app/home.html'
 
+    def test_func(self):
+        return self.request.user.is_authenticated and self.request.user.is_staff
 
-class AdminReserveView(ListView):
+    def handle_no_permission(self):
+        return redirect('admin_app:login')
+
+    def get_context_data(self, **kwargs):
+        setting = ReservationLimitSetting.objects.first()
+        form = kwargs.get('limit_form') or ReservationLimitSettingForm(
+            instance=setting,
+            initial=None if setting else {'max_per_user_per_day': 1}
+        )
+        return {
+            'limit_form': form,
+            **{k: v for k, v in kwargs.items() if k != 'limit_form'},
+        }
+
+    def get(self, request, *args, **kwargs):
+        from django.shortcuts import render
+        return render(request, self.template_name, self.get_context_data())
+
+    def post(self, request, *args, **kwargs):
+        from django.shortcuts import render
+        setting = ReservationLimitSetting.objects.first()
+        form = ReservationLimitSettingForm(request.POST, instance=setting)
+        if form.is_valid():
+            form.save()
+            messages.success(request, '予約上限を更新しました。')
+            return redirect('admin_app:home')
+        return render(request, self.template_name, self.get_context_data(limit_form=form))
+
+
+class AdminReserveView(UserPassesTestMixin, ListView):
     """管理者用予約管理画面"""
     model = Reservation
     template_name = 'admin_app/reserve.html'
     context_object_name = 'reservations'
     paginate_by = 10
+
+    def test_func(self):
+        return self.request.user.is_authenticated and self.request.user.is_staff
+
+    def handle_no_permission(self):
+        return redirect('admin_app:login')
 
     def get_queryset(self):
         today = date.today()
@@ -65,7 +103,28 @@ class AdminReserveView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['view_mode'] = self.request.GET.get('view', 'future')
+        if 'limit_form' not in context:
+            setting = ReservationLimitSetting.objects.first()
+            context['limit_form'] = ReservationLimitSettingForm(
+                instance=setting,
+                initial=None if setting else {'max_per_user_per_day': 1},
+            )
         return context
+
+    def post(self, request, *args, **kwargs):
+        """予約上限設定フォームの保存"""
+        setting = ReservationLimitSetting.objects.first()
+        form = ReservationLimitSettingForm(request.POST, instance=setting)
+        if form.is_valid():
+            form.save()
+            messages.success(request, '予約上限を更新しました。')
+            redirect_url = request.path
+            if request.GET:
+                redirect_url += '?' + request.GET.urlencode()
+            return redirect(redirect_url)
+        self.object_list = self.get_queryset()
+        context = self.get_context_data(limit_form=form)
+        return self.render_to_response(context)
 
 
 class APIAdminReserveUpdateView(UserPassesTestMixin, View):

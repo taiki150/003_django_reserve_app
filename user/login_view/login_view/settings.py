@@ -151,11 +151,11 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'taiki1544.0711@gmail.com'
-EMAIL_HOST_PASSWORD = 'your-app-password'  # 2段階認証の場合はアプリパスワード
+EMAIL_HOST_PASSWORD = 'kdep nxcz nmsc iqee'  # 2段階認証の場合はアプリパスワード
 DEFAULT_FROM_EMAIL = 'taiki1544.0711@gmail.com'
 
 # テストメールアドレス
 REMINDER_TEST_EMAIL = 'taiki1544.0711@gmail.com'
 
 # 開発時：メールをコンソールに出力（実際には送信しない）
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
